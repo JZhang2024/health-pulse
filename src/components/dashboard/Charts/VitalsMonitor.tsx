@@ -1,33 +1,14 @@
-import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Activity } from "lucide-react";
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer 
 } from 'recharts';
+import { useVitalsMonitor } from '@/hooks/useVitalsMonitor';
 
 export function VitalsMonitor() {
-  const [vitals, setVitals] = useState({
-    heartRate: Array.from({length: 20}, () => ({
-      time: new Date(),
-      value: Math.floor(Math.random() * 20) + 70
-    }))
-  });
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setVitals(prev => ({
-        heartRate: [
-          ...prev.heartRate.slice(1),
-          {
-            time: new Date(),
-            value: Math.floor(Math.random() * 20) + 70
-          }
-        ]
-      }));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  
+  const vitals = useVitalsMonitor();
 
   return (
     <Card className="bg-white/10 backdrop-blur p-4">
