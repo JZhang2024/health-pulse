@@ -1,5 +1,6 @@
 import { Calendar, Video, MessageSquare, Clock } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
 
 const HomePage = () => {
   const features = [
@@ -37,9 +38,12 @@ const HomePage = () => {
             <p className="text-xl text-gray-600 mb-8">
               Connect with trusted healthcare providers from the comfort of your home
             </p>
-            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+            <Link 
+              href="/dashboard"
+              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            >
               Get Started
-            </button>
+            </Link>
           </div>
         </div>
       </div>
