@@ -3,11 +3,11 @@ export interface VideoRecordingState {
     isPaused: boolean;
     duration: number;
     error: string | null;
-  }
-  
-  export interface VideoRecordingOptions {
+}
+
+export interface VideoRecordingOptions {
     maxDuration: number;
     frameRate: number;
     width: number;
     height: number;
-  }
+}
