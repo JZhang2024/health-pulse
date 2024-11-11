@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect} from 'react';
 import { useCamera } from './useCamera';
 import { VitalsData } from '@/types/vitallens';
 
@@ -24,6 +24,14 @@ export const useVitalsMonitor = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [vitalsData, setVitalsData] = useState<VitalsData>(DEFAULT_VITALS_DATA);
   const [error, setError] = useState<string | null>(null);
+
+  // Handle both manual stop and timeout
+  useEffect(() => {
+    if (camera.isRecording && camera.duration >= 30) {
+      stopMonitoring();
+    }
+  }, [camera.duration, camera.isRecording]);
+
 
   const analyzeVideo = async (videoBlob: Blob) => {
     try {
