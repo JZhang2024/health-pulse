@@ -2,8 +2,8 @@
 
 import { MainAnalysisPanel } from "./MainAnalysisPanel";
 import { AnalysisSummary } from "./AnalysisSummary";
-import { useVitalsMonitor } from '@/hooks/useVitalsMonitor';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useVitalsMonitor } from "@/hooks/useVitalsMonitor";
 
 export function DashboardClient() {
   const { 
@@ -11,7 +11,10 @@ export function DashboardClient() {
     isRecording, 
     isAnalyzing,
     error, 
-    toggleRecording 
+    stream,
+    duration,
+    startMonitoring, 
+    stopMonitoring 
   } = useVitalsMonitor();
 
   return (
@@ -26,7 +29,10 @@ export function DashboardClient() {
       <MainAnalysisPanel 
         isRecording={isRecording}
         isAnalyzing={isAnalyzing}
-        onRecordingToggle={toggleRecording}
+        stream={stream}
+        duration={duration}
+        onStart={startMonitoring}
+        onStop={stopMonitoring}
         vitalsData={vitalsData}
       />
       <div className="lg:col-span-4 space-y-4">

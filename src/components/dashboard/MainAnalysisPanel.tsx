@@ -7,14 +7,20 @@ import type { VitalsData } from "@/types/vitallens";
 interface MainAnalysisPanelProps {
   isRecording: boolean;
   isAnalyzing: boolean;
-  onRecordingToggle: () => void;
+  stream: MediaStream | null;
+  duration: number;
+  onStart: () => Promise<void>;
+  onStop: () => Promise<void>;
   vitalsData: VitalsData;
 }
 
 export function MainAnalysisPanel({ 
   isRecording, 
   isAnalyzing,
-  onRecordingToggle, 
+  stream,
+  duration,
+  onStart,
+  onStop,
   vitalsData 
 }: MainAnalysisPanelProps) {
   return (
@@ -23,7 +29,8 @@ export function MainAnalysisPanel({
         <ControlBar 
           isRecording={isRecording} 
           isAnalyzing={isAnalyzing}
-          onRecordingToggle={onRecordingToggle}
+          onStart={onStart}
+          onStop={onStop}
         />
 
         <div className="space-y-4 mb-4">
@@ -39,7 +46,12 @@ export function MainAnalysisPanel({
           />
         </div>
 
-        <VideoSection isRecording={isRecording} />
+        <VideoSection 
+          isRecording={isRecording}
+          duration={duration}
+          maxDuration={30}
+          stream={stream}
+        />
       </Card>
     </div>
   );

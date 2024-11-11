@@ -4,13 +4,15 @@ import { Camera, Mic } from "lucide-react";
 interface ControlBarProps {
   isRecording: boolean;
   isAnalyzing: boolean;
-  onRecordingToggle: () => void;
+  onStart: () => Promise<void>;
+  onStop: () => Promise<void>;
 }
 
 export function ControlBar({ 
   isRecording, 
   isAnalyzing,
-  onRecordingToggle 
+  onStart,
+  onStop
 }: ControlBarProps) {
   return (
     <div className="flex justify-between items-center mb-6">
@@ -22,12 +24,12 @@ export function ControlBar({
           className={`bg-white/10 hover:bg-white/20 text-white ${
             isRecording ? 'animate-pulse ring-2 ring-red-500' : ''
           }`}
-          onClick={onRecordingToggle}
+          onClick={isRecording ? onStop : onStart}
           disabled={isAnalyzing}
         >
           <Camera className="h-4 w-4 mr-2" />
           {isRecording ? 'Stop Recording' : 
-           isAnalyzing ? 'Analyzing...' : 'Start Analysis'}
+           isAnalyzing ? 'Analyzing...' : 'Start Recording'}
         </Button>
         <Button 
           variant="ghost" 
