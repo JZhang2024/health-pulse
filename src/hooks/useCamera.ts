@@ -7,7 +7,6 @@ interface CameraConfig {
     width: number;
     height: number;
   };
-  mimeType: string;
 }
 
 const DEFAULT_CONFIG: CameraConfig = {
@@ -16,8 +15,19 @@ const DEFAULT_CONFIG: CameraConfig = {
   resolution: {
     width: 1280,
     height: 720
-  },
-  mimeType: 'video/webm;codecs=vp9' // This format works well for most browsers
+  }
+};
+
+// Helper to find the best supported MP4 codec
+const getBestMP4Codec = () => {
+  const codecs = [
+    'video/mp4;codecs=h264',
+    'video/mp4;codecs=avc1',
+    'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+    'video/mp4;codecs=avc1.42001E'
+  ];
+  
+  return codecs.find(codec => MediaRecorder.isTypeSupported(codec)) || null;
 };
 
 export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
@@ -63,6 +73,12 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
 
   const startRecording = useCallback(async () => {
     try {
+      // Get the best supported MP4 codec
+      const mimeType = getBestMP4Codec();
+      if (!mimeType) {
+        throw new Error('MP4 recording is not supported in this browser');
+      }
+
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { 
           facingMode: 'user',
@@ -75,14 +91,9 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
 
       setStream(mediaStream);
 
-      // Make sure browser supports our mime type
-      if (!MediaRecorder.isTypeSupported(config.mimeType)) {
-        throw new Error('Unsupported video format');
-      }
-
       const mediaRecorder = new MediaRecorder(mediaStream, {
-        mimeType: config.mimeType,
-        videoBitsPerSecond: 2500000 // 2.5 Mbps - good quality while keeping file size reasonable
+        mimeType,
+        videoBitsPerSecond: 2500000 // 2.5 Mbps for good quality MP4
       });
       
       mediaRecorderRef.current = mediaRecorder;
@@ -100,10 +111,55 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
       setError(null);
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to start recording');
-      throw err;
+      const errorMessage = err instanceof Error ? err.message : 'Failed to start recording';
+      setError(errorMessage);
+      
+      // If it's a codec support error, fall back to WebM
+      if (errorMessage.includes('MP4') || errorMessage.includes('not supported')) {
+        try {
+          await startWebMRecording();
+        } catch (fallbackErr) {
+          throw new Error(`Failed to start recording with both MP4 and WebM: ${fallbackErr}`);
+        }
+      } else {
+        throw err;
+      }
     }
   }, [config]);
+
+  // Fallback to WebM if MP4 is not supported
+  const startWebMRecording = async () => {
+    const mediaStream = await navigator.mediaDevices.getUserMedia({
+      video: { 
+        facingMode: 'user',
+        width: { ideal: config.resolution.width },
+        height: { ideal: config.resolution.height },
+        frameRate: { ideal: config.fps }
+      },
+      audio: false
+    });
+
+    setStream(mediaStream);
+
+    const mediaRecorder = new MediaRecorder(mediaStream, {
+      mimeType: 'video/webm;codecs=vp9',
+      videoBitsPerSecond: 2500000
+    });
+    
+    mediaRecorderRef.current = mediaRecorder;
+    videoChunksRef.current = [];
+    
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        videoChunksRef.current.push(event.data);
+      }
+    };
+
+    mediaRecorder.start(1000);
+    setIsRecording(true);
+    setDuration(0);
+    setError(null);
+  };
 
   const stopRecording = useCallback(async () => {
     if (!mediaRecorderRef.current || !isRecording) return null;
@@ -114,7 +170,7 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
       mediaRecorderRef.current.onstop = () => {
         try {
           const videoBlob = new Blob(videoChunksRef.current, { 
-            type: config.mimeType
+            type: mediaRecorderRef.current?.mimeType || 'video/mp4'
           });
           resolve(videoBlob);
         } catch (error) {
@@ -132,7 +188,7 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
 
       mediaRecorderRef.current.stop();
     });
-  }, [isRecording, stream, config.mimeType]);
+  }, [isRecording, stream]);
 
   return {
     isRecording,
@@ -141,6 +197,7 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
     progress: (duration / config.maxDuration) * 100,
     error,
     startRecording,
-    stopRecording
+    stopRecording,
+    currentMimeType: mediaRecorderRef.current?.mimeType || null
   };
 };

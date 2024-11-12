@@ -33,14 +33,15 @@ export const useVitalsMonitor = () => {
     }
   }, [camera.duration, camera.isRecording]);
 
-
   const analyzeVideo = async (videoBlob: Blob) => {
     try {
       setIsAnalyzing(true);
       
-      // Create a File object from the Blob
-      // The name with .webm extension helps servers identify the file type
-      const videoFile = new File([videoBlob], 'recording.webm', { 
+      // Get the file extension based on the MIME type
+      const fileExtension = videoBlob.type.includes('mp4') ? 'mp4' : 'webm';
+      
+      // Create a File object from the Blob with the appropriate extension
+      const videoFile = new File([videoBlob], `recording.${fileExtension}`, { 
         type: videoBlob.type 
       });
       
@@ -62,6 +63,7 @@ export const useVitalsMonitor = () => {
       setVitalsData(results);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to analyze video');
+      console.error('Video analysis error:', err);
       throw err;
     } finally {
       setIsAnalyzing(false);
@@ -81,6 +83,7 @@ export const useVitalsMonitor = () => {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to process video');
+      console.error('Monitoring error:', err);
     }
   };
 
@@ -90,6 +93,7 @@ export const useVitalsMonitor = () => {
     vitalsData,
     error: error || camera.error,
     startMonitoring,
-    stopMonitoring
+    stopMonitoring,
+    currentFormat: camera.currentMimeType
   };
 };
