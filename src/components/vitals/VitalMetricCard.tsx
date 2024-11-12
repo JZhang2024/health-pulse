@@ -9,7 +9,7 @@ interface VitalMetricCardProps {
   type: VitalType;
 }
 
-function getVitalSignNote(type: VitalType, value: number, confidence: number): string {
+export function getVitalSignNote(type: VitalType, value: number, confidence: number): string {
   const confidenceLevel = confidence >= 0.9 ? "high" : confidence >= 0.7 ? "good" : "moderate";
   
   if (type === 'heartRate') {
