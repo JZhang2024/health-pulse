@@ -7,6 +7,7 @@ interface CameraConfig {
     width: number;
     height: number;
   };
+  mimeType: string;
 }
 
 const DEFAULT_CONFIG: CameraConfig = {
@@ -15,7 +16,8 @@ const DEFAULT_CONFIG: CameraConfig = {
   resolution: {
     width: 1280,
     height: 720
-  }
+  },
+  mimeType: 'video/webm;codecs=vp9' // This format works well for most browsers
 };
 
 export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
@@ -73,8 +75,14 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
 
       setStream(mediaStream);
 
+      // Make sure browser supports our mime type
+      if (!MediaRecorder.isTypeSupported(config.mimeType)) {
+        throw new Error('Unsupported video format');
+      }
+
       const mediaRecorder = new MediaRecorder(mediaStream, {
-        mimeType: 'video/webm;codecs=vp9'
+        mimeType: config.mimeType,
+        videoBitsPerSecond: 2500000 // 2.5 Mbps - good quality while keeping file size reasonable
       });
       
       mediaRecorderRef.current = mediaRecorder;
@@ -106,7 +114,7 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
       mediaRecorderRef.current.onstop = () => {
         try {
           const videoBlob = new Blob(videoChunksRef.current, { 
-            type: 'video/webm;codecs=vp9' 
+            type: config.mimeType
           });
           resolve(videoBlob);
         } catch (error) {
@@ -124,7 +132,7 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
 
       mediaRecorderRef.current.stop();
     });
-  }, [isRecording, stream]);
+  }, [isRecording, stream, config.mimeType]);
 
   return {
     isRecording,

@@ -1,6 +1,7 @@
 import { useState, useEffect} from 'react';
 import { useCamera } from './useCamera';
 import { VitalsData } from '@/types/vitallens';
+import { config } from '@/config';
 
 const DEFAULT_VITALS_DATA: VitalsData = {
   heartRate: {
@@ -37,17 +38,24 @@ export const useVitalsMonitor = () => {
     try {
       setIsAnalyzing(true);
       
+      // Create a File object from the Blob
+      // The name with .webm extension helps servers identify the file type
+      const videoFile = new File([videoBlob], 'recording.webm', { 
+        type: videoBlob.type 
+      });
+      
       const formData = new FormData();
-      formData.append('video', videoBlob);
+      formData.append('video', videoFile);
       formData.append('fps', '30');
 
-      const response = await fetch('/api/vitals', {
+      const response = await fetch(config.api.baseUrl, {
         method: 'POST',
         body: formData
       });
 
       if (!response.ok) {
-        throw new Error('Failed to analyze video');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to analyze video');
       }
 
       const results = await response.json();
