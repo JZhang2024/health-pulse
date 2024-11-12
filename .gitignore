@@ -39,5 +39,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# pycache
-scripts/__pycache__/
+# anything inside scripts folder pycache
+/scripts/__pycache__/
