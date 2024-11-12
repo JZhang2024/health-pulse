@@ -1,22 +1,21 @@
-import { 
-    LineChart, Line, XAxis, YAxis, CartesianGrid, 
-    Tooltip, ResponsiveContainer 
-  } from 'recharts';
-  import type { VitalType } from "@/types/vitallens";
-  
-  interface VitalsChartProps {
-    data: Array<{
-      time: number;
-      value: number;
-      confidence: number;
-    }>;
-    unit: string;
-    type: VitalType;
-  }
-  
-  export function VitalsChart({ data, unit, type }: VitalsChartProps) {
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { VitalsChartProps } from '@/types/vitallens';
+
+
+export function VitalsChart({ data, unit, type, average }: VitalsChartProps) {
     const isHeartRate = type === 'heartRate';
     
+    // Set appropriate domains based on the type of vital sign
+    const getDomain = () => {
+      if (isHeartRate) {
+        // Set range around the average heart rate
+        return [Math.max(0, average - 20), average + 20];
+      } else {
+        // Set range around the average respiratory rate
+        return [Math.max(0, average - 10), average + 10];
+      }
+    };
+  
     return (
       <ResponsiveContainer width="100%" height={180}>
         <LineChart data={data}>
@@ -27,8 +26,12 @@ import {
             stroke="rgba(255,255,255,0.5)"
           />
           <YAxis 
-            domain={isHeartRate ? [40, 120] : [8, 24]}
-            label={{ value: unit, angle: -90, position: 'insideLeft' }}
+            domain={getDomain()}
+            label={{ 
+              value: unit, 
+              angle: -90, 
+              position: 'insideLeft' 
+            }}
             stroke="rgba(255,255,255,0.5)"
           />
           <Tooltip 

@@ -47,13 +47,19 @@ interface BaseMetric {
     confidence: number;
   }
   
-  // Processed metric format for UI components
   export interface VitalMetric {
     timeSeries: TimeSeriesDataPoint[];
     average: number;
-    confidence: number; // Global confidence for the metric
+    confidence: number;
     unit: string;
     note: string;
+  }
+
+  export interface VitalsChartProps {
+    data: TimeSeriesDataPoint[];
+    unit: string;
+    type: VitalType;  // 'heartRate' | 'respiratoryRate'
+    average: number;  // The average value used for centering the chart
   }
   
   // Main data structure used by UI components

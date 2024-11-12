@@ -1,4 +1,4 @@
-import { useState, useEffect} from 'react';
+import { useState, useEffect, useCallback} from 'react';
 import { useCamera } from './useCamera';
 import { VitalsData } from '@/types/vitallens';
 import { config } from '@/config';
@@ -56,15 +56,16 @@ export const useVitalsMonitor = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to analyze video');
+        throw new Error(errorData.detail || 'Failed to analyze video');
       }
 
       const results = await response.json();
       setVitalsData(results);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to analyze video');
-      console.error('Video analysis error:', err);
-      throw err;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to analyze video';
+      setError(errorMessage);
+      console.error('Video analysis error:', { message: errorMessage, error });
+      throw error;
     } finally {
       setIsAnalyzing(false);
     }
@@ -72,7 +73,13 @@ export const useVitalsMonitor = () => {
 
   const startMonitoring = async () => {
     setError(null);
-    await camera.startRecording();
+    try {
+      await camera.startRecording();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to start recording';
+      setError(errorMessage);
+      console.error('Recording start error:', { message: errorMessage, error });
+    }
   };
 
   const stopMonitoring = async () => {
@@ -81,9 +88,14 @@ export const useVitalsMonitor = () => {
       if (videoBlob) {
         await analyzeVideo(videoBlob);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to process video');
-      console.error('Monitoring error:', err);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process video';
+      setError(errorMessage);
+      // Use structured logging with type assertion
+      console.error('Monitoring error:', { 
+        message: errorMessage,
+        error: error as Error | unknown
+      });
     }
   };
 

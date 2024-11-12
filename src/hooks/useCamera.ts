@@ -13,7 +13,7 @@ const DEFAULT_CONFIG: CameraConfig = {
   maxDuration: 30,
   fps: 30,
   resolution: {
-    width: 1280,
+    width: 1280,  // Increased to 1080p
     height: 720
   }
 };
@@ -82,18 +82,25 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { 
           facingMode: 'user',
-          width: { ideal: config.resolution.width },
-          height: { ideal: config.resolution.height },
-          frameRate: { ideal: config.fps }
+          width: { ideal: config.resolution.width, min: 1280 },
+          height: { ideal: config.resolution.height, min: 720 },
+          frameRate: { exact: config.fps }, // Force exact FPS
+          // Request high quality video
+          aspectRatio: { ideal: 16/9 },
         },
         audio: false
       });
+
+      // Check actual stream settings
+      const videoTrack = mediaStream.getVideoTracks()[0];
+      const settings = videoTrack.getSettings();
+      console.log('Video track settings:', settings);
 
       setStream(mediaStream);
 
       const mediaRecorder = new MediaRecorder(mediaStream, {
         mimeType,
-        videoBitsPerSecond: 2500000 // 2.5 Mbps for good quality MP4
+        videoBitsPerSecond: 8000000 // 8 Mbps for high quality
       });
       
       mediaRecorderRef.current = mediaRecorder;
@@ -114,7 +121,7 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
       const errorMessage = err instanceof Error ? err.message : 'Failed to start recording';
       setError(errorMessage);
       
-      // If it's a codec support error, fall back to WebM
+      // If it's a codec support error, fall back to WebM with high quality
       if (errorMessage.includes('MP4') || errorMessage.includes('not supported')) {
         try {
           await startWebMRecording();
@@ -132,9 +139,10 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
     const mediaStream = await navigator.mediaDevices.getUserMedia({
       video: { 
         facingMode: 'user',
-        width: { ideal: config.resolution.width },
-        height: { ideal: config.resolution.height },
-        frameRate: { ideal: config.fps }
+        width: { ideal: config.resolution.width, min: 1280 },
+        height: { ideal: config.resolution.height, min: 720 },
+        frameRate: { exact: config.fps },
+        aspectRatio: { ideal: 16/9 },
       },
       audio: false
     });
@@ -143,7 +151,7 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
 
     const mediaRecorder = new MediaRecorder(mediaStream, {
       mimeType: 'video/webm;codecs=vp9',
-      videoBitsPerSecond: 2500000
+      videoBitsPerSecond: 8000000 // 8 Mbps for high quality
     });
     
     mediaRecorderRef.current = mediaRecorder;
