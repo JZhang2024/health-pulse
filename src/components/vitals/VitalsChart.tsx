@@ -21,7 +21,7 @@ export function VitalsChart({ data, unit, type, average }: VitalsChartProps) {
         <ResponsiveContainer width="100%" height={180}>
           <LineChart
             data={data}
-            margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+            margin={{ top: 10, right: 10, left: 10, bottom: 25 }}
           >
             <CartesianGrid 
               strokeDasharray="3 3" 
@@ -38,7 +38,8 @@ export function VitalsChart({ data, unit, type, average }: VitalsChartProps) {
               label={{ 
                 value: 'Time (s)', 
                 position: 'bottom',
-                fill: 'rgba(255,255,255,0.7)'
+                fill: 'rgba(255,255,255,0.7)',
+                offset: 10
               }}
             />
             <YAxis 
@@ -50,6 +51,7 @@ export function VitalsChart({ data, unit, type, average }: VitalsChartProps) {
                 angle: -90, 
                 position: 'insideLeft',
                 fill: 'rgba(255,255,255,0.7)',
+                offset: -5,
                 style: { textAnchor: 'middle' }
               }}
             />
