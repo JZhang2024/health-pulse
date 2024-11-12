@@ -115,34 +115,6 @@ def get_video_format(content_type: str) -> str:
     else:
         raise ValueError(f"Unsupported video format: {content_type}")
 
-async def process_video_file(file_path: str, fps: float) -> np.ndarray:
-    """
-    Process video file and convert to numpy array for VitalLens processing.
-    Supports both MP4 and WebM formats.
-    """
-    try:
-        cap = cv2.VideoCapture(file_path)
-        if not cap.isOpened():
-            raise ValueError(f"Failed to open video file: {file_path}")
-
-        frames = []
-        while True:
-            ret, frame = cap.read()
-            if not ret:
-                break
-            frames.append(frame)
-        
-        cap.release()
-
-        if not frames:
-            raise ValueError("No frames were read from the video file")
-
-        return np.array(frames)
-
-    except Exception as e:
-        logger.error(f"Error processing video file: {str(e)}")
-        raise
-
 
 def process_vitallens_results(results: list) -> Dict[str, Any]:
     """
@@ -239,11 +211,8 @@ async def analyze_vitals(video: UploadFile = File(...), fps: Optional[float] = 3
         with open(temp_video_path, 'wb') as f:
             f.write(content)
 
-        # Process video
-        video_array = await process_video_file(temp_video_path, fps)
-        
         # Analyze with VitalLens using app.state
-        results = app.state.vital_lens(video_array, fps=fps)
+        results = vital_lens(temp_video_path, fps=fps)
 
         # Process and format results
         results = process_vitallens_results(results)
