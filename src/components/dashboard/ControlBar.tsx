@@ -16,7 +16,7 @@ export function ControlBar({
 }: ControlBarProps) {
   return (
     <div className="flex justify-between items-center mb-6">
-      <h2 className="text-xl font-bold text-white">Real-time Analysis</h2>
+      <h2 className="text-xl font-bold text-white">Estimate Vitals</h2>
       <div className="flex gap-2">
         <Button 
           variant="ghost" 

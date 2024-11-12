@@ -5,6 +5,7 @@ import { AnalysisSummary } from "./AnalysisSummary";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useVitalsMonitor } from "@/hooks/useVitalsMonitor";
 import VitalMeasurementGuide from "./VitalMeasurementGuide";
+import HealthAssistant from "./HealthAssistant";
 
 export function DashboardClient() {
     const { 
@@ -39,6 +40,7 @@ export function DashboardClient() {
             />
             <div className="lg:col-span-4 space-y-4">
                 <AnalysisSummary vitalsData={vitalsData} />
+                <HealthAssistant className="h-[500px]" />
             </div>
         </>
     );
