@@ -25,7 +25,7 @@ export function MainAnalysisPanel({
 }: MainAnalysisPanelProps) {
     return (
         <div className="lg:col-span-8 space-y-4">
-            <Card className="p-6 bg-white/10 backdrop-blur border-none">
+            <Card className="bg-white/80 backdrop-blur rounded-xl p-6 border border-sky-100 shadow-sm">
                 <ControlBar 
                     isRecording={isRecording} 
                     isAnalyzing={isAnalyzing}
@@ -42,7 +42,7 @@ export function MainAnalysisPanel({
                     />
                 </div>
 
-                <div className="space-y-4 mb-4">
+                <div className="space-y-4">
                     <VitalMetricCard
                         title="Heart Rate Monitor"
                         metric={vitalsData.heartRate}

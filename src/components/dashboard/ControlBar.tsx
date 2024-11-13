@@ -16,14 +16,17 @@ export function ControlBar({
 }: ControlBarProps) {
   return (
     <div className="flex justify-between items-center mb-6">
-      <h2 className="text-xl font-bold text-white">Estimate Vitals</h2>
+      <h2 className="text-xl font-bold text-sky-950">Estimate Vitals</h2>
       <div className="flex gap-2">
         <Button 
           variant="ghost" 
           size="sm"
-          className={`bg-white/10 hover:bg-white/20 text-white ${
-            isRecording ? 'animate-pulse ring-2 ring-red-500' : ''
-          }`}
+          className={`
+            ${isRecording 
+              ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
+              : 'bg-sky-500 hover:bg-sky-600 text-white'
+            } shadow-sm transition-colors px-4 py-2 rounded-md text-sm
+          `}
           onClick={isRecording ? onStop : onStart}
           disabled={isAnalyzing}
         >
@@ -34,7 +37,7 @@ export function ControlBar({
         <Button 
           variant="ghost" 
           size="sm"
-          className="bg-white/10 hover:bg-white/20 text-white"
+          className="bg-slate-100 hover:bg-slate-200 text-sky-950 shadow-sm transition-colors px-4 py-2 rounded-md text-sm"
           disabled={isRecording || isAnalyzing}
         >
           <Mic className="h-4 w-4 mr-2" />
