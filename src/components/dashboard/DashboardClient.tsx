@@ -7,6 +7,7 @@ import { useVitalsMonitor } from "@/hooks/useVitalsMonitor";
 import Guidelines from "./Guidelines";
 import HealthAssistant from "./HealthAssistant";
 import { AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 
 export function DashboardClient() {
     const { 
@@ -19,20 +20,17 @@ export function DashboardClient() {
         startMonitoring, 
         stopMonitoring 
     } = useVitalsMonitor();
+
+    // Display toast notification if there's an error
+    if (error) {
+        console.log("Error:", error);
+        toast.error(error, {duration: 5000});
+    }
     
-    
+
     return (
         <>
             <Guidelines />
-            
-            {error && (
-                <div className="lg:col-span-12 mb-4">
-                    <Alert className="bg-red-50 border border-red-200 text-red-900">
-                        <AlertTriangle className="h-4 w-4 text-red-600" />
-                        <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                </div>
-            )}
             
             <MainAnalysisPanel 
                 isRecording={isRecording}
