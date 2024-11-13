@@ -4,7 +4,7 @@ import { MainAnalysisPanel } from "./MainAnalysisPanel";
 import { AnalysisSummary } from "./AnalysisSummary";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useVitalsMonitor } from "@/hooks/useVitalsMonitor";
-import VitalMeasurementGuide from "./VitalMeasurementGuide";
+import Guidelines from "./Guidelines";
 import HealthAssistant from "./HealthAssistant";
 import { AlertTriangle } from "lucide-react";
 
@@ -19,10 +19,11 @@ export function DashboardClient() {
         startMonitoring, 
         stopMonitoring 
     } = useVitalsMonitor();
-
+    
+    
     return (
         <>
-            <VitalMeasurementGuide />
+            <Guidelines />
             
             {error && (
                 <div className="lg:col-span-12 mb-4">
