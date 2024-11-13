@@ -30,9 +30,7 @@ export function VideoSection({
         {isRecording && stream ? (
           <>
             <video
-              ref={(video) => {
-                if (video && stream) video.srcObject = stream;
-              }}
+              ref={videoRef}
               autoPlay
               playsInline
               muted
