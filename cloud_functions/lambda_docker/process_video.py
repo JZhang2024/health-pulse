@@ -17,7 +17,41 @@ vital_lens = VitalLens(
 )
 print("Initialized VitalLens client")
 
-def process_vitallens_results(results):
+def get_video_info(filepath):
+    import subprocess
+    cmd = ['ffprobe', '-v', 'error', '-select_streams', 'v:0',
+           '-show_entries', 'stream=duration,r_frame_rate,nb_frames',
+           '-of', 'json', filepath]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    info = json.loads(result.stdout)
+    print(f"Full FFprobe output: {info}")
+    
+    # Parse frame rate which comes as 'numerator/denominator'
+    stream_info = info.get('streams', [{}])[0]
+    frame_rate = stream_info.get('r_frame_rate', '').split('/')
+    if len(frame_rate) == 2:
+        actual_fps = float(frame_rate[0]) / float(frame_rate[1])
+    else:
+        actual_fps = 0
+        
+    duration = float(stream_info.get('duration', 0))
+    nb_frames = int(stream_info.get('nb_frames', 0))
+    
+    expected_frames = int(duration * actual_fps)
+    
+    print(f"Video duration: {duration} seconds")
+    print(f"Actual frame rate: {actual_fps} fps")
+    print(f"Number of frames reported: {nb_frames}")
+    print(f"Expected number of frames (duration * fps): {expected_frames}")
+    
+    return {
+        'duration': duration,
+        'fps': actual_fps,
+        'nb_frames': nb_frames,
+        'expected_frames': expected_frames
+    }
+
+def process_vitallens_results(results, fps):
     # Validate input
     if not results or not isinstance(results, list) or len(results) == 0:
         raise ValueError("No face data found in results")
@@ -37,8 +71,7 @@ def process_vitallens_results(results):
     print("Extracted respiratory rate: %s" % respiratory)
     print("Extracted respiratory waveform: %s" % respiratory_waveform)
     
-    fps = 30  # Sampling rate
-    print("Set FPS to %d" % fps)
+    print(f"Using FPS: {fps}")
     
     # Process heart rate time series
     heart_rate_value = heart_rate.get('value', 0)
@@ -90,40 +123,6 @@ def process_vitallens_results(results):
     return response
     
 
-def get_video_info(filepath):
-    import subprocess
-    cmd = ['ffprobe', '-v', 'error', '-select_streams', 'v:0',
-           '-show_entries', 'stream=duration,r_frame_rate,nb_frames',
-           '-of', 'json', filepath]
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    info = json.loads(result.stdout)
-    print(f"Full FFprobe output: {info}")
-    
-    # Parse frame rate which comes as 'numerator/denominator'
-    stream_info = info.get('streams', [{}])[0]
-    frame_rate = stream_info.get('r_frame_rate', '').split('/')
-    if len(frame_rate) == 2:
-        actual_fps = float(frame_rate[0]) / float(frame_rate[1])
-    else:
-        actual_fps = 0
-        
-    duration = float(stream_info.get('duration', 0))
-    nb_frames = int(stream_info.get('nb_frames', 0))
-    
-    expected_frames = int(duration * actual_fps)
-    
-    print(f"Video duration: {duration} seconds")
-    print(f"Actual frame rate: {actual_fps} fps")
-    print(f"Number of frames reported: {nb_frames}")
-    print(f"Expected number of frames (duration * fps): {expected_frames}")
-    
-    return {
-        'duration': duration,
-        'fps': actual_fps,
-        'nb_frames': nb_frames,
-        'expected_frames': expected_frames
-    }
-
 def lambda_handler(event, context):
     headers = {
         'Access-Control-Allow-Origin': '*',
@@ -156,10 +155,10 @@ def lambda_handler(event, context):
         video_info = get_video_info(temp_video_path)
         
         # Process with VitalLens
-        print(f"Starting VitalLens processing with target fps=30.0...")
-        results = vital_lens(temp_video_path, fps=30.0)
+        print(f"Starting VitalLens processing")
+        results = vital_lens(temp_video_path, fps=video_info['fps'])
         
-        processed_results = process_vitallens_results(results)
+        processed_results = process_vitallens_results(results, fps=video_info['fps'])
         
         # Cleanup
         os.remove(temp_video_path)
