@@ -15,8 +15,8 @@ export function TechnicalDetails() {
             <div className="text-sky-700">Real-time Analysis</div>
           </div>
           <div className="bg-white/80 rounded-lg p-6 backdrop-blur border border-sky-100 shadow-sm">
-            <div className="text-4xl font-bold text-sky-600 mb-2">&lt;1s</div>
-            <div className="text-sky-700">Instant Results</div>
+            <div className="text-4xl font-bold text-sky-600 mb-2">&lt;5s</div>
+            <div className="text-sky-700">Quick Results</div>
           </div>
           <div className="bg-white/80 rounded-lg p-6 backdrop-blur border border-sky-100 shadow-sm">
             <div className="text-4xl font-bold text-sky-600 mb-2">24/7</div>

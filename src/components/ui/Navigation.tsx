@@ -14,6 +14,9 @@ export function Navigation() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+          <Link href="/" className="text-sky-600 hover:text-sky-700 font-medium text-sm">
+              Home
+            </Link>
             <Link href="/about" className="text-sky-600 hover:text-sky-700 font-medium text-sm">
               About
             </Link>
