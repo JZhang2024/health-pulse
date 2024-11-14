@@ -1,15 +1,13 @@
 import { developmentConfig } from './development';
 
-const isProd = process.env.NODE_ENV === 'production';
+const usePythonServer = process.env.NEXT_PUBLIC_USE_PYTHON_SERVER === 'true';
 
 export const config = {
   api: {
-    baseUrl: isProd 
-      ? '/api/vitals'
-      : developmentConfig.api.usePythonServer
-        ? `${developmentConfig.api.pythonServerUrl}/api/vitals`
-        : '/api/vitals',
-    mockLatency: isProd ? 0 : developmentConfig.api.mockLatency,
+    baseUrl: usePythonServer
+      ? `${developmentConfig.api.pythonServerUrl}/api/vitals`
+      : `${process.env.NEXT_PUBLIC_API_URL}`,
+    mockLatency: usePythonServer ? 0 : developmentConfig.api.mockLatency,
   }
 };
 

@@ -2,12 +2,11 @@
 
 import { MainAnalysisPanel } from "./MainAnalysisPanel";
 import { AnalysisSummary } from "./AnalysisSummary";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useVitalsMonitor } from "@/hooks/useVitalsMonitor";
 import Guidelines from "./Guidelines";
 import HealthAssistant from "./HealthAssistant";
-import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 export function DashboardClient() {
     const { 
@@ -17,6 +16,7 @@ export function DashboardClient() {
         error, 
         stream,
         duration,
+        uploadProgress,
         startMonitoring, 
         stopMonitoring 
     } = useVitalsMonitor();
@@ -26,7 +26,16 @@ export function DashboardClient() {
         console.log("Error:", error);
         toast.error(error, {duration: 5000});
     }
-    
+
+    // Show upload progress toast when uploading
+    useEffect(() => {
+        if (uploadProgress > 0 && uploadProgress < 100) {
+            toast.info(`Uploading video: ${Math.round(uploadProgress)}%`, {
+                duration: 2000,
+                id: 'upload-progress' // Prevent duplicate toasts
+            });
+        }
+    }, [uploadProgress]);
 
     return (
         <>
@@ -34,7 +43,7 @@ export function DashboardClient() {
             
             <MainAnalysisPanel 
                 isRecording={isRecording}
-                isAnalyzing={isAnalyzing}
+                isAnalyzing={isAnalyzing || uploadProgress > 0} // Consider upload as part of analysis phase
                 stream={stream}
                 duration={duration}
                 onStart={startMonitoring}
