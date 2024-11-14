@@ -57,33 +57,43 @@ export const useVitalsMonitor = () => {
 
   const uploadToS3 = async (url: string, file: Blob): Promise<void> => {
     return new Promise((resolve, reject) => {
-      // Create XHR to track upload progress
-      const xhr = new XMLHttpRequest();
-      
-      xhr.upload.addEventListener('progress', (event) => {
-        if (event.lengthComputable) {
-          const percentComplete = (event.loaded / event.total) * 100;
-          setUploadProgress(percentComplete);
-        }
-      });
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener('progress', (event) => {
+            if (event.lengthComputable) {
+                const percentComplete = (event.loaded / event.total) * 100;
+                setUploadProgress(percentComplete);
+            }
+        });
 
-      xhr.addEventListener('load', () => {
-        if (xhr.status === 200) {
-          resolve();
-        } else {
-          reject(new Error(`Upload failed with status: ${xhr.status}`));
-        }
-      });
+        xhr.addEventListener('load', () => {
+            // S3 returns 200 for successful uploads
+            if (xhr.status >= 200 && xhr.status < 300) {
+                resolve();
+            } else {
+                console.error('Upload failed with response:', xhr.responseText);
+                reject(new Error(`Upload failed with status: ${xhr.status}`));
+            }
+        });
 
-      xhr.addEventListener('error', () => {
-        reject(new Error('Upload failed'));
-      });
+        xhr.addEventListener('error', () => {
+            console.error('Upload network error:', xhr.responseText);
+            reject(new Error('Network error during upload'));
+        });
 
-      xhr.open('PUT', url);
-      xhr.setRequestHeader('Content-Type', file.type);
-      xhr.send(file);
+        xhr.open('PUT', url);
+        xhr.setRequestHeader('Content-Type', file.type);
+        
+        // Log request details for debugging
+        console.log('Uploading with:', {
+            url,
+            contentType: file.type,
+            fileSize: file.size
+        });
+
+        xhr.send(file);
     });
-  };
+};
 
   const analyzeVideo = async (videoBlob: Blob) => {
     try {
@@ -94,9 +104,14 @@ export const useVitalsMonitor = () => {
       const { uploadUrl, videoId } = await getUploadUrl(videoBlob.type);
 
       // 2. Upload to S3
+      console.log('Uploading video to S3...');
       await uploadToS3(uploadUrl, videoBlob);
+      console.log('Upload complete');
 
       // 3. Trigger processing
+
+      // log endpoint for debugging
+      console.log(`${config.api.baseUrl}/process-video`);
       const processResponse = await fetch(`${config.api.baseUrl}/process-video`, {
         method: 'POST',
         headers: {

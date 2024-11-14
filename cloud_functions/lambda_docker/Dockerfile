@@ -1,26 +1,38 @@
-FROM public.ecr.aws/lambda/python:3.11
+FROM public.ecr.aws/lambda/python:3.12
 
-# Install gcc and required build tools
-RUN yum groupinstall -y "Development Tools"
-RUN yum install -y \
+# Install basic system dependencies
+RUN dnf update -y && \
+    dnf install -y \
     gcc \
     gcc-c++ \
-    make \
     python3-devel \
-    atlas-devel \
-    libffi-devel
+    atlas \
+    lapack \
+    blas \
+    openblas \
+    libffi-devel \
+    wget \
+    tar \
+    xz
+
+# Install static FFmpeg binaries
+RUN wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz && \
+    tar xvf ffmpeg-release-amd64-static.tar.xz && \
+    mv ffmpeg-*-amd64-static/ffmpeg /usr/local/bin/ && \
+    mv ffmpeg-*-amd64-static/ffprobe /usr/local/bin/ && \
+    rm -rf ffmpeg-*-amd64-static* && \
+    chmod +x /usr/local/bin/ffmpeg && \
+    chmod +x /usr/local/bin/ffprobe
 
 # Copy requirements.txt
 COPY requirements.txt ${LAMBDA_TASK_ROOT}
 
-# Install numpy first as it's often a base requirement
-RUN pip install numpy
+# Install Python packages
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
 
-# Try installing vitallens with all dependencies
-RUN pip install vitallens[all]
+# Copy function code
+COPY process_video.py ${LAMBDA_TASK_ROOT}
 
-# Copy only the process_video lambda file
-COPY process_video.py ${LAMBDA_TASK_ROOT}/
-
-# Set the CMD to point to process_video.lambda_handler
+# Set the CMD to your handler
 CMD [ "process_video.lambda_handler" ]
