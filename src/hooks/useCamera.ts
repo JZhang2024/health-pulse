@@ -84,8 +84,7 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
           facingMode: 'user',
           width: { ideal: config.resolution.width, min: 1280 },
           height: { ideal: config.resolution.height, min: 720 },
-          frameRate: { exact: config.fps }, // Force exact FPS
-          // Request high quality video
+          frameRate: { ideal: config.fps, min: 15 }, // Allow some flexibility in frame rate
           aspectRatio: { ideal: 16/9 },
         },
         audio: false

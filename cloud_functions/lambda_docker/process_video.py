@@ -11,6 +11,7 @@ vital_lens = VitalLens(
     method=Method.VITALLENS,
     api_key=os.environ['VITALLENS_API_KEY'],
     detect_faces=True,
+    fdet_max_faces=1,
     estimate_running_vitals=False,
     export_to_json=False
 )
@@ -89,16 +90,47 @@ def process_vitallens_results(results):
     return response
     
 
-def lambda_handler(event, context):
+def get_video_info(filepath):
+    import subprocess
+    cmd = ['ffprobe', '-v', 'error', '-select_streams', 'v:0',
+           '-show_entries', 'stream=duration,r_frame_rate,nb_frames',
+           '-of', 'json', filepath]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    info = json.loads(result.stdout)
+    print(f"Full FFprobe output: {info}")
+    
+    # Parse frame rate which comes as 'numerator/denominator'
+    stream_info = info.get('streams', [{}])[0]
+    frame_rate = stream_info.get('r_frame_rate', '').split('/')
+    if len(frame_rate) == 2:
+        actual_fps = float(frame_rate[0]) / float(frame_rate[1])
+    else:
+        actual_fps = 0
+        
+    duration = float(stream_info.get('duration', 0))
+    nb_frames = int(stream_info.get('nb_frames', 0))
+    
+    expected_frames = int(duration * actual_fps)
+    
+    print(f"Video duration: {duration} seconds")
+    print(f"Actual frame rate: {actual_fps} fps")
+    print(f"Number of frames reported: {nb_frames}")
+    print(f"Expected number of frames (duration * fps): {expected_frames}")
+    
+    return {
+        'duration': duration,
+        'fps': actual_fps,
+        'nb_frames': nb_frames,
+        'expected_frames': expected_frames
+    }
 
-    # Add CORS headers to all responses
+def lambda_handler(event, context):
     headers = {
-        'Access-Control-Allow-Origin': '*',  # Or your specific domain
+        'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST,OPTIONS'
     }
 
-    # Handle OPTIONS request (preflight)
     if event['httpMethod'] == 'OPTIONS':
         return {
             'statusCode': 200,
@@ -112,34 +144,41 @@ def lambda_handler(event, context):
         video_id = body['videoId']
         
         s3_client = boto3.client('s3')
-        
-        # Create temp file for video processing in /tmp directory
+        bucket = os.environ['UPLOAD_BUCKET']
+        key = f'uploads/{video_id}.mp4'
         temp_video_path = f'/tmp/{video_id}.mp4'
         
         # Download video from S3
-        s3_client.download_file(
-            os.environ['UPLOAD_BUCKET'],
-            f'uploads/{video_id}.mp4',
-            temp_video_path
-        )
+        s3_client.download_file(bucket, key, temp_video_path)
+        
+        # Get and log video information
+        print("Analyzing video file...")
+        video_info = get_video_info(temp_video_path)
         
         # Process with VitalLens
+        print(f"Starting VitalLens processing with target fps=30.0...")
         results = vital_lens(temp_video_path, fps=30.0)
+        
         processed_results = process_vitallens_results(results)
         
-        # Clean up original video if desired
-        s3_client.delete_object(
-            Bucket=os.environ['UPLOAD_BUCKET'],
-            Key=f'uploads/{video_id}.mp4'
-        )
+        # Cleanup
+        os.remove(temp_video_path)
+        s3_client.delete_object(Bucket=bucket, Key=key)
         
         return {
             'statusCode': 200,
             'headers': headers,
-            'body': json.dumps(processed_results)
+            'body': json.dumps({
+                **processed_results,
+                'videoInfo': video_info  # Include video info in response
+            })
         }
         
     except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        
         return {
             'statusCode': 500,
             'headers': headers,
