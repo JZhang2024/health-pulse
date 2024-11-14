@@ -34,7 +34,7 @@ export const useVitalsMonitor = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
-    if (camera.isRecording && camera.duration >= 28) { // Stop at 28 seconds
+    if (camera.isRecording && camera.duration >= 19) { // Stop at 28 seconds
       stopMonitoring();
     }
   }, [camera.duration, camera.isRecording]);

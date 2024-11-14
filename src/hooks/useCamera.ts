@@ -10,7 +10,7 @@ interface CameraConfig {
 }
 
 const DEFAULT_CONFIG: CameraConfig = {
-  maxDuration: 30,
+  maxDuration: 20,
   fps: 30,
   resolution: {
     width: 1280,  // Increased to 1080p

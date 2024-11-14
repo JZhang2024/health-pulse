@@ -37,7 +37,7 @@ export function MainAnalysisPanel({
                     <VideoSection 
                         isRecording={isRecording}
                         duration={duration}
-                        maxDuration={30}
+                        maxDuration={20}
                         stream={stream}
                     />
                 </div>
