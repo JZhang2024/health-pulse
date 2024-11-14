@@ -30,7 +30,7 @@ export default function AboutPage() {
             <div className="bg-sky-50 rounded-lg p-6 mb-6">
               <ul className="space-y-3 text-sky-900">
                 <li><span className="font-semibold">Frontend:</span> Next.js 15, React, TailwindCSS, shadcn/ui</li>
-                <li><span className="font-semibold">Backend: </span> Next.js/Node, AWS Lambda, Vercel</li>
+                <li><span className="font-semibold">Backend: </span> Next.js/Node, AWS Lambda, Vercel, FastAPI (local testing)</li>
                 <li><span className="font-semibold">Vital Signs Detection:</span> VitalLens API from Roust Labs</li>
                 <li><span className="font-semibold">Health Assistant:</span> Large Language Model Integration with OpenAI and xAI APIs</li>
               </ul>
