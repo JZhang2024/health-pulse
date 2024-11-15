@@ -41,7 +41,7 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
   const timerRef = useRef<NodeJS.Timeout>();
 
   // Fallback to WebM if MP4 is not supported
-  const startWebMRecording = async () => {
+  const startWebMRecording = useCallback(async () => {
     const mediaStream = await navigator.mediaDevices.getUserMedia({
       video: { 
         facingMode: 'user',
@@ -52,12 +52,12 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
       },
       audio: false
     });
-
+  
     setStream(mediaStream);
-
+  
     const mediaRecorder = new MediaRecorder(mediaStream, {
       mimeType: 'video/webm;codecs=vp9',
-      videoBitsPerSecond: 8000000 // 8 Mbps for high quality
+      videoBitsPerSecond: 8000000
     });
     
     mediaRecorderRef.current = mediaRecorder;
@@ -68,12 +68,12 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
         videoChunksRef.current.push(event.data);
       }
     };
-
+  
     mediaRecorder.start(1000);
     setIsRecording(true);
     setDuration(0);
     setError(null);
-  };
+  }, [config.resolution.width, config.resolution.height, config.fps]);
 
   const stopRecording = useCallback(async () => {
     if (!mediaRecorderRef.current || !isRecording) return null;

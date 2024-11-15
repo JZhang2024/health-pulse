@@ -65,6 +65,7 @@ interface BaseMetric {
     data: TimeSeriesDataPoint[];
     unit: string;
     type: VitalType;
+    average: number;
   }
   
   // Main data structure used by UI components

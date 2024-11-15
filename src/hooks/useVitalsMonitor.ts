@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useCamera } from './useCamera';
 import { VitalsData } from '@/types/vitallens';
 import { config } from '@/config';
@@ -27,69 +27,14 @@ interface UploadUrlResponse {
 
 export const useVitalsMonitor = () => {
   const camera = useCamera();
+  const { stopRecording } = camera;
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [vitalsData, setVitalsData] = useState<VitalsData>(DEFAULT_VITALS_DATA);
   const [error, setError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [analysisProgress, setAnalysisProgress] = useState(0);
 
-  const startMonitoring = async () => {
-    setError(null);
-    try {
-      await camera.startRecording();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to start recording';
-      setError(errorMessage);
-      console.error('Recording start error:', { message: errorMessage, error });
-    }
-  };
-
-  const stopMonitoring = async () => {
-    try {
-      const videoBlob = await camera.stopRecording();
-      if (videoBlob) {
-        await analyzeVideo(videoBlob);
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to process video';
-      setError(errorMessage);
-      console.error('Monitoring error:', { 
-        message: errorMessage,
-        error: error as Error | unknown
-      });
-    }
-  };
-
-  useEffect(() => {
-    let progressInterval: NodeJS.Timeout;
-    
-    if (isAnalyzing && uploadProgress === 100) {
-      setAnalysisProgress(0);
-      
-      progressInterval = setInterval(() => {
-        setAnalysisProgress(prev => {
-          if (prev < 90) {
-            return Math.min(90, prev + (90 - prev) / 10);
-          }
-          return prev;
-        });
-      }, 500);
-    }
-
-    return () => {
-      if (progressInterval) {
-        clearInterval(progressInterval);
-      }
-    };
-  }, [isAnalyzing, uploadProgress]);
-
-  useEffect(() => {
-    if (camera.isRecording && camera.duration >= 25) {
-      stopMonitoring();
-    }
-  }, [camera.duration, camera.isRecording, stopMonitoring]);
-
-  const getUploadUrl = async (fileType: string): Promise<UploadUrlResponse> => {
+  const getUploadUrl = useCallback(async (fileType: string): Promise<UploadUrlResponse> => {
     const response = await fetch(`${config.api.baseUrl}/get-upload-url`, {
       method: 'POST',
       headers: {
@@ -103,12 +48,12 @@ export const useVitalsMonitor = () => {
     }
 
     return response.json();
-  };
+  }, []);
 
-  const uploadToS3 = async (url: string, file: Blob): Promise<void> => {
+  const uploadToS3 = useCallback(async (url: string, file: Blob): Promise<void> => {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      
+
       xhr.upload.addEventListener('progress', (event) => {
         if (event.lengthComputable) {
           const percentComplete = (event.loaded / event.total) * 100;
@@ -132,7 +77,7 @@ export const useVitalsMonitor = () => {
 
       xhr.open('PUT', url);
       xhr.setRequestHeader('Content-Type', file.type);
-      
+
       console.log('Uploading with:', {
         url,
         contentType: file.type,
@@ -141,9 +86,9 @@ export const useVitalsMonitor = () => {
 
       xhr.send(file);
     });
-  };
+  }, []);
 
-  const analyzeVideo = async (videoBlob: Blob) => {
+  const analyzeVideo = useCallback(async (videoBlob: Blob) => {
     try {
       setIsAnalyzing(true);
       setUploadProgress(0);
@@ -183,7 +128,63 @@ export const useVitalsMonitor = () => {
         setAnalysisProgress(0);
       }, 1000);
     }
+  }, [getUploadUrl, uploadToS3]);
+
+  const startMonitoring = async () => {
+    setError(null);
+    try {
+      await camera.startRecording();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to start recording';
+      setError(errorMessage);
+      console.error('Recording start error:', { message: errorMessage, error });
+    }
   };
+
+  const stopMonitoring = useCallback(async () => {
+    try {
+      const videoBlob = await stopRecording();
+      if (videoBlob) {
+        await analyzeVideo(videoBlob);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process video';
+      setError(errorMessage);
+      console.error('Monitoring error:', {
+        message: errorMessage,
+        error: error as Error | unknown
+      });
+    }
+  }, [stopRecording, analyzeVideo]);
+
+  useEffect(() => {
+    let progressInterval: NodeJS.Timeout;
+
+    if (isAnalyzing && uploadProgress === 100) {
+      setAnalysisProgress(0);
+
+      progressInterval = setInterval(() => {
+        setAnalysisProgress(prev => {
+          if (prev < 90) {
+            return Math.min(90, prev + (90 - prev) / 10);
+          }
+          return prev;
+        });
+      }, 500);
+    }
+
+    return () => {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
+    };
+  }, [isAnalyzing, uploadProgress]);
+
+  useEffect(() => {
+    if (camera.isRecording && camera.duration >= 25) {
+      stopMonitoring();
+    }
+  }, [camera.duration, camera.isRecording, stopMonitoring]);
 
   return {
     ...camera,
