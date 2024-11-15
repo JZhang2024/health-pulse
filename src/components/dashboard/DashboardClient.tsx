@@ -66,7 +66,6 @@ export function DashboardClient() {
     return (
         <>
             <Guidelines />
-            
             <MainAnalysisPanel 
                 isRecording={isRecording}
                 isAnalyzing={isAnalyzing}
@@ -76,7 +75,6 @@ export function DashboardClient() {
                 onStop={stopMonitoring}
                 vitalsData={vitalsData}
             />
-            
             <div className="lg:col-span-4 space-y-4">
                 <AnalysisSummary vitalsData={vitalsData} />
                 <HealthAssistant className="h-[500px]" vitalsData={vitalsData} />

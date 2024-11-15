@@ -1,12 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Camera, Mic } from "lucide-react";
-
-interface ControlBarProps {
-  isRecording: boolean;
-  isAnalyzing: boolean;
-  onStart: () => Promise<void>;
-  onStop: () => Promise<void>;
-}
+import { ControlBarProps } from "@/types/components";
 
 export function ControlBar({ 
   isRecording, 

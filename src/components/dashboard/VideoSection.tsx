@@ -1,13 +1,7 @@
 import { useRef, useEffect } from "react";
 import { Camera } from "lucide-react";
 import { RecordingProgress } from "../vitals/RecordingProgress";
-
-interface VideoSectionProps {
-  isRecording: boolean;
-  duration: number;
-  maxDuration: number;
-  stream: MediaStream | null;
-}
+import { VideoSectionProps } from "@/types/components";
 
 export function VideoSection({ 
   isRecording, 
@@ -37,18 +31,7 @@ export function VideoSection({
               className="w-full h-full object-cover rounded-lg"
             />
             <div className="absolute bottom-6 left-6 right-6">
-              <div className="w-full">
-                <div className="flex justify-between text-sm text-sky-950 mb-1">
-                  <span>{duration}s</span>
-                  <span>{maxDuration}s</span>
-                </div>
-                <div className="h-2 bg-sky-100 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-sky-500 transition-all duration-1000"
-                    style={{ width: `${(duration / maxDuration) * 100}%` }}
-                  />
-                </div>
-              </div>
+              <RecordingProgress duration={duration} maxDuration={maxDuration} />
             </div>
           </>
         ) : (

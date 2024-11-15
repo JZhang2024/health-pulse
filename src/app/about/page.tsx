@@ -30,9 +30,9 @@ export default function AboutPage() {
             <div className="bg-sky-50 rounded-lg p-6 mb-6">
               <ul className="space-y-3 text-sky-900">
                 <li><span className="font-semibold">Frontend:</span> Next.js 15, React, TailwindCSS, shadcn/ui</li>
-                <li><span className="font-semibold">Backend: </span> Next.js/Node, AWS Lambda, Vercel, FastAPI (local testing)</li>
+                <li><span className="font-semibold">Backend:</span> Next.js/Node, AWS (API Gateway, Lambda, DynamoDB, S3), Vercel, FastAPI (local testing)</li>
                 <li><span className="font-semibold">Vital Signs Detection:</span> VitalLens API from Roust Labs</li>
-                <li><span className="font-semibold">Health Assistant:</span> Large Language Model Integration with OpenAI and xAI APIs</li>
+                <li><span className="font-semibold">Health Assistant:</span> Large Language Model Integration with OpenAI/xAI APIs</li>
               </ul>
             </div>
 
@@ -52,7 +52,7 @@ export default function AboutPage() {
                 VitalLens API
               </Link>
               <Link 
-                href="https://github.com/yourusername/healthpulse" 
+                href="https://github.com/JZhang2024/health-pulse" 
                 target="_blank"
                 className="inline-flex items-center gap-2 text-sky-600 hover:text-sky-700"
               >

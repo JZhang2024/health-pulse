@@ -1,27 +1,27 @@
-// types/components.ts
-
 import { VitalsData, VitalMetric, VitalType } from './vitallens';
-
-// Dashboard component props
-export interface DashboardClientProps {
-  // Currently empty as DashboardClient manages its own state
-}
 
 export interface MainAnalysisPanelProps {
   isRecording: boolean;
   isAnalyzing: boolean;
-  onRecordingToggle: () => void;
+  stream: MediaStream | null;
+  duration: number;
+  onStart: () => Promise<void>;
+  onStop: () => Promise<void>;
   vitalsData: VitalsData;
 }
 
 export interface ControlBarProps {
   isRecording: boolean;
   isAnalyzing: boolean;
-  onRecordingToggle: () => void;
+  onStart: () => Promise<void>;
+  onStop: () => Promise<void>;
 }
 
 export interface VideoSectionProps {
   isRecording: boolean;
+  duration: number;
+  maxDuration: number;
+  stream: MediaStream | null;
 }
 
 export interface AnalysisSummaryProps {
@@ -47,4 +47,24 @@ export interface VitalMetricCardProps {
   title: string;
   metric: VitalMetric;
   type: VitalType;
+}
+
+export interface RecordingProgressProps {
+  duration: number;
+  maxDuration: number;
+}
+
+export interface ChatMessage {
+  role: 'assistant' | 'user';
+  content: string;
+}
+
+export interface HealthAssistantProps {
+  className?: string;
+  vitalsData?: VitalsData;
+}
+
+export interface HealthAssistantApiResponse {
+  response: string;
+  conversationId: string;
 }

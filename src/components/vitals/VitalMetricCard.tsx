@@ -1,13 +1,8 @@
 import { Card } from "@/components/ui/card";
-import { ConfidenceBadge } from './ConfidenceBadge';
 import { VitalsChart } from './VitalsChart';
-import type { VitalMetric, VitalType } from "@/types/vitallens";
+import type { VitalMetricCardProps } from "@/types/components";
+import type { VitalType } from "@/types/vitallens";
 
-interface VitalMetricCardProps {
-  title: string;
-  metric: VitalMetric;
-  type: VitalType;
-}
 
 export function getVitalSignNote(type: VitalType, value: number, confidence: number): string {
   const confidenceLevel = confidence >= 0.9 ? "high" : confidence >= 0.7 ? "good" : "moderate";

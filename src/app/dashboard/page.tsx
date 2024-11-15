@@ -7,8 +7,7 @@ export default function DashboardPage() {
       <Navigation />
       <div className="min-h-screen backdrop-blur-sm py-8 px-4">
         <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
-          </div>
+          <div className="mb-6"></div>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             <DashboardClient />
           </div>

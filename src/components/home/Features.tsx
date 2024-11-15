@@ -32,7 +32,10 @@ export function Features() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {features.map((feature, index) => (
-        <Card key={index} className="bg-white/80 backdrop-blur border border-sky-100 shadow-sm hover:bg-sky-50 transition-colors">
+        <Card
+          key={index}
+          className="bg-white/80 backdrop-blur border border-sky-100 shadow-sm hover:bg-sky-50 transition-colors"
+        >
           <CardHeader>
             <feature.icon className={`w-10 h-10 ${feature.color} mb-2`} />
             <CardTitle className="text-xl font-semibold text-sky-950">

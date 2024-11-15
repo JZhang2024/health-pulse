@@ -10,7 +10,6 @@ export default function HelpPage() {
           {/* Getting Started */}
           <div className="bg-white/80 backdrop-blur rounded-xl p-8 border border-sky-100 shadow-sm">
             <h1 className="text-3xl font-bold text-sky-950 mb-6">Help Center</h1>
-            
             <h2 className="text-xl font-semibold text-sky-950 mb-4">Getting Started</h2>
             <div className="space-y-4 text-sky-900">
               <p>
@@ -80,10 +79,10 @@ export default function HelpPage() {
           <div className="bg-white/80 backdrop-blur rounded-xl p-6 border border-sky-100 shadow-sm">
             <h3 className="text-lg font-semibold text-sky-950 mb-4">Technical Requirements</h3>
             <ul className="space-y-2 text-sky-900">
-              <li>• Modern web browser (Chrome, Firefox, Safari, Edge)</li>
-              <li>• Webcam access</li>
-              <li>• Stable internet connection</li>
-              <li>• Well-lit environment</li>
+              <li>Modern web browser (Chrome, Firefox, Safari, Edge)</li>
+              <li>Webcam access</li>
+              <li>Stable internet connection</li>
+              <li>Well-lit environment</li>
             </ul>
           </div>
 

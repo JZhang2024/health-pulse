@@ -1,10 +1,6 @@
 import { Card } from "@/components/ui/card";
-import type { VitalsData } from "@/types/vitallens";
 import { getVitalSignNote } from "../vitals/VitalMetricCard";
-
-interface AnalysisSummaryProps {
-    vitalsData: VitalsData;
-}
+import { AnalysisSummaryProps } from "@/types/components";
 
 export function AnalysisSummary({ vitalsData }: AnalysisSummaryProps) {
     const { heartRate, respiratoryRate } = vitalsData;
@@ -37,7 +33,6 @@ export function AnalysisSummary({ vitalsData }: AnalysisSummaryProps) {
                         </div>
                     </div>
                 </div>
-                
                 <div className="bg-sky-50/50 rounded-xl p-4 border border-sky-100">
                     <div className="text-sm font-medium text-sky-950 mb-2">Analysis Notes</div>
                     <div className="space-y-2 text-sm text-sky-700">
