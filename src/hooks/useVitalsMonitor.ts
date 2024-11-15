@@ -32,6 +32,34 @@ export const useVitalsMonitor = () => {
   const [vitalsData, setVitalsData] = useState<VitalsData>(DEFAULT_VITALS_DATA);
   const [error, setError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+
+  // Analysis progress simulation interval
+  useEffect(() => {
+    let progressInterval: NodeJS.Timeout;
+    
+    if (isAnalyzing && uploadProgress === 100) {
+      // Start at 0 when analysis begins
+      setAnalysisProgress(0);
+      
+      // Simulate progress updates
+      progressInterval = setInterval(() => {
+        setAnalysisProgress(prev => {
+          // Slowly increase up to 90%, leaving room for final processing
+          if (prev < 90) {
+            return Math.min(90, prev + (90 - prev) / 10);
+          }
+          return prev;
+        });
+      }, 500);
+    }
+
+    return () => {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
+    };
+  }, [isAnalyzing, uploadProgress]);
 
   useEffect(() => {
     if (camera.isRecording && camera.duration >= 19) { // Stop at 28 seconds
@@ -126,6 +154,7 @@ export const useVitalsMonitor = () => {
       }
 
       const results = await processResponse.json();
+      setAnalysisProgress(100);
       setVitalsData(results);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to analyze video';
@@ -133,8 +162,11 @@ export const useVitalsMonitor = () => {
       console.error('Video analysis error:', { message: errorMessage, error });
       throw error;
     } finally {
-      setIsAnalyzing(false);
-      setUploadProgress(0);
+      setTimeout(() => {
+        setIsAnalyzing(false);
+        setUploadProgress(0);
+        setAnalysisProgress(0);
+      }, 1000);
     }
   };
 
@@ -171,6 +203,7 @@ export const useVitalsMonitor = () => {
     vitalsData,
     error: error || camera.error,
     uploadProgress,
+    analysisProgress,
     startMonitoring,
     stopMonitoring,
     currentFormat: camera.currentMimeType

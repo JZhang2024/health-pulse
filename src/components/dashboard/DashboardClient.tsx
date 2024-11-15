@@ -7,6 +7,7 @@ import Guidelines from "./Guidelines";
 import HealthAssistant from "./HealthAssistant";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { Progress } from "@/components/ui/progress";
 
 export function DashboardClient() {
     const { 
@@ -17,25 +18,50 @@ export function DashboardClient() {
         stream,
         duration,
         uploadProgress,
+        analysisProgress,
         startMonitoring, 
         stopMonitoring 
     } = useVitalsMonitor();
 
     // Display toast notification if there's an error
-    if (error) {
-        console.log("Error:", error);
-        toast.error(error, {duration: 5000});
-    }
+    useEffect(() => {
+        if (error) {
+            console.log("Error:", error);
+            toast.error(error, { duration: 5000 });
+        }
+    }, [error]);
 
     // Show upload progress toast when uploading
     useEffect(() => {
         if (uploadProgress > 0 && uploadProgress < 100) {
-            toast.info(`Uploading video: ${Math.round(uploadProgress)}%`, {
-                duration: 2000,
-                id: 'upload-progress' // Prevent duplicate toasts
-            });
+            toast.info(
+                <div className="w-full">
+                    <p className="mb-2">Uploading video...</p>
+                    <Progress value={uploadProgress} className="h-1" />
+                </div>,
+                {
+                    duration: 2000,
+                    id: 'upload-progress'
+                }
+            );
         }
     }, [uploadProgress]);
+
+    // Show analysis progress toast when analyzing
+    useEffect(() => {
+        if (analysisProgress > 0 && analysisProgress < 100) {
+            toast.info(
+                <div className="w-full">
+                    <p className="mb-2">Analyzing vital signs...</p>
+                    <Progress value={analysisProgress} className="h-1" />
+                </div>,
+                {
+                    duration: 2000,
+                    id: 'analysis-progress'
+                }
+            );
+        }
+    }, [analysisProgress]);
 
     return (
         <>
@@ -43,7 +69,7 @@ export function DashboardClient() {
             
             <MainAnalysisPanel 
                 isRecording={isRecording}
-                isAnalyzing={isAnalyzing || uploadProgress > 0} // Consider upload as part of analysis phase
+                isAnalyzing={isAnalyzing}
                 stream={stream}
                 duration={duration}
                 onStart={startMonitoring}
