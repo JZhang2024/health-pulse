@@ -33,22 +33,6 @@ export interface ConfidenceBadgeProps {
   confidence: number;
 }
 
-export interface VitalsChartProps {
-  data: Array<{
-    time: number;
-    value: number;
-    confidence: number;
-  }>;
-  unit: string;
-  type: VitalType;
-}
-
-export interface VitalMetricCardProps {
-  title: string;
-  metric: VitalMetric;
-  type: VitalType;
-}
-
 export interface RecordingProgressProps {
   duration: number;
   maxDuration: number;

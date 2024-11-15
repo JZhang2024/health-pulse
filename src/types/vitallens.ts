@@ -55,11 +55,17 @@ interface BaseMetric {
     note: string;
   }
 
+  export interface VitalMetricCardProps {
+    title: string;
+    metric: VitalMetric;
+    type: VitalType;
+  }
+
   export interface VitalsChartProps {
     data: TimeSeriesDataPoint[];
     unit: string;
-    type: VitalType;  // 'heartRate' | 'respiratoryRate'
-    average: number;  // The average value used for centering the chart
+    type: VitalType;
+    average: number;
   }
   
   // Main data structure used by UI components
@@ -69,27 +75,3 @@ interface BaseMetric {
   }
   
   export type VitalType = 'heartRate' | 'respiratoryRate';
-  
-  // API configuration types
-  export interface VitalLensConfig {
-    apiKey: string;
-    detectFaces?: boolean;
-    estimateRunningVitals?: boolean;
-    fdetMaxFaces?: number;
-    fdetFs?: number;
-    exportToJson?: boolean;
-    exportDir?: string;
-  }
-  
-  // API Response types
-  export interface VitalLensApiResponse {
-    results: VitalLensResult[];
-    error?: string;
-  }
-  
-  // API Error types
-  export interface VitalLensApiError {
-    error: string;
-    code?: string;
-    details?: unknown;
-  }
