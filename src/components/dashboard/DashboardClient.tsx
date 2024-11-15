@@ -53,7 +53,7 @@ export function DashboardClient() {
             
             <div className="lg:col-span-4 space-y-4">
                 <AnalysisSummary vitalsData={vitalsData} />
-                <HealthAssistant className="h-[500px]" />
+                <HealthAssistant className="h-[500px]" vitalsData={vitalsData} />
             </div>
         </>
     );

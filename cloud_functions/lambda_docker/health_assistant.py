@@ -1,8 +1,11 @@
 import json
 import os
+import time
+import uuid
 from typing import TypedDict, Optional, List, Dict
 import boto3
 from openai import OpenAI
+from boto3.dynamodb.conditions import Key
 
 # Type definitions
 class VitalMetric(TypedDict):
@@ -20,12 +23,17 @@ class Message(TypedDict):
     role: str
     content: str
 
-# Initialize OpenAI client
+# Initialize clients
+dynamodb = boto3.resource('dynamodb')
+print("Initialized DynamoDB resource: %s" % dynamodb)
+conversations_table = dynamodb.Table(os.environ['CONVERSATIONS_TABLE'])
+print("Initialized DynamoDB table")
 XAI_API_KEY = os.getenv("XAI_API_KEY")
 client = OpenAI(
     api_key=XAI_API_KEY,
     base_url="https://api.x.ai/v1",
 )
+print("Initialized OpenAI client")
 
 # System prompt template
 SYSTEM_PROMPT = """You are a health information assistant integrated into a vital signs monitoring application. 
@@ -62,7 +70,7 @@ def get_vital_signs_context(vitals_data: Optional[VitalsData]) -> str:
     hr = vitals_data['heartRate']
     rr = vitals_data['respiratoryRate']
     
-    context = SYSTEM_PROMPT.format(
+    return SYSTEM_PROMPT.format(
         heart_rate=hr['average'],
         heart_rate_unit=hr['unit'],
         heart_rate_confidence=hr['confidence'],
@@ -70,20 +78,71 @@ def get_vital_signs_context(vitals_data: Optional[VitalsData]) -> str:
         respiratory_rate_unit=rr['unit'],
         respiratory_rate_confidence=rr['confidence']
     )
-    
-    print("Generated vital signs context:", context)
-    return context
 
-def generate_response(messages: List[Message], vitals_data: Optional[VitalsData] = None) -> str:
-    """Generate a response using the OpenAI API."""
+def get_conversation_history(conversation_id: str) -> List[Message]:
+    """Retrieve conversation history from DynamoDB."""
     try:
-        # Prepare conversation history with system prompt
+        response = conversations_table.query(
+            KeyConditionExpression=Key('conversation_id').eq(conversation_id),
+            ScanIndexForward=True  # Sort messages by timestamp
+        )
+        
+        if not response['Items']:
+            return []
+            
+        # Convert DynamoDB items to Message objects
+        messages = []
+        for item in response['Items']:
+            messages.append({
+                'role': item['role'],
+                'content': item['content']
+            })
+        
+        print(f"Retrieved {len(messages)} messages from conversation history")
+            
+        return messages
+        
+    except Exception as e:
+        print(f"Error retrieving conversation history: {str(e)}")
+        return []
+
+def save_messages(conversation_id: str, new_messages: List[Message]):
+    """Save new messages to DynamoDB."""
+    timestamp = int(time.time() * 1000)  # Use millisecond precision
+    
+    try:
+        # Batch write new messages
+        with conversations_table.batch_writer() as batch:
+            for message in new_messages:
+                batch.put_item(Item={
+                    'conversation_id': conversation_id,
+                    'timestamp': timestamp,
+                    'role': message['role'],
+                    'content': message['content'],
+                    'ttl': int(time.time()) + (7 * 24 * 60 * 60)  # 7 day TTL
+                })
+                timestamp += 1  # Ensure unique timestamps for ordering
+                
+    except Exception as e:
+        print(f"Error saving messages: {str(e)}")
+        raise
+
+def generate_response(conversation_id: str, new_messages: List[Message], vitals_data: Optional[VitalsData] = None) -> str:
+    """Generate a response using the OpenAI API with conversation history."""
+    try:
+        # Get existing conversation history
+        history = get_conversation_history(conversation_id)
+        
+        # Prepare conversation with system prompt and history
         conversation = [
             {"role": "system", "content": get_vital_signs_context(vitals_data)}
         ]
         
-        # Add user messages
-        conversation.extend(messages)
+        # Add historical context (last 10 messages to stay within token limits)
+        conversation.extend(history[-10:])
+        
+        # Add new messages
+        conversation.extend(new_messages)
         
         # Get response from OpenAI
         response = client.chat.completions.create(
@@ -95,9 +154,16 @@ def generate_response(messages: List[Message], vitals_data: Optional[VitalsData]
             frequency_penalty=0.0,
             presence_penalty=0.0
         )
-        print("Received response from OpenAI")
         
-        return response.choices[0].message.content
+        assistant_response = response.choices[0].message.content
+        
+        # Save new messages and response to history
+        save_messages(conversation_id, [
+            *new_messages,
+            {"role": "assistant", "content": assistant_response}
+        ])
+        
+        return assistant_response
         
     except Exception as e:
         print(f"Error generating response: {str(e)}")
@@ -124,15 +190,22 @@ def lambda_handler(event, context):
         body = json.loads(event['body'])
         messages = body.get('messages', [])
         vitals_data = body.get('vitalsData')
+        conversation_id = body.get('conversationId')
+        
+        # Generate new conversation ID if not provided
+        if not conversation_id:
+            conversation_id = str(uuid.uuid4())
         
         # Generate response
-        response = generate_response(messages, vitals_data)
+        response = generate_response(conversation_id, messages, vitals_data)
+        print("Generated response")
         
         return {
             'statusCode': 200,
             'headers': headers,
             'body': json.dumps({
-                'response': response
+                'response': response,
+                'conversationId': conversation_id
             })
         }
         
