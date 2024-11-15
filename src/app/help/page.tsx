@@ -13,8 +13,8 @@ export default function HelpPage() {
             <h2 className="text-xl font-semibold text-sky-950 mb-4">Getting Started</h2>
             <div className="space-y-4 text-sky-900">
               <p>
-                HealthPulse provides contactless vital sign monitoring using your device's camera. 
-                Here's how to get the best results:
+                HealthPulse provides contactless vital sign monitoring using your device&apos;s camera. 
+                Here&apos;s how to get the best results:
               </p>
               <ul className="list-disc list-inside space-y-2 pl-4">
                 <li>Use a device with a good quality webcam</li>

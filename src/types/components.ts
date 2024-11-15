@@ -1,4 +1,4 @@
-import { VitalsData, VitalMetric, VitalType } from './vitallens';
+import { VitalsData } from './vitallens';
 
 export interface MainAnalysisPanelProps {
   isRecording: boolean;

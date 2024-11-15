@@ -1,10 +1,6 @@
 import { Info, ShieldAlert } from "lucide-react";
-import React, { useState } from "react";
 
 export default function Guidelines() {
-  const [showGuide, setShowGuide] = useState(true);
-  
-  if (!showGuide) return null;
   
   return (
     <div className="col-span-12 space-y-3">

@@ -1,7 +1,7 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { VitalsChartProps } from '@/types/vitallens';
 
-export function VitalsChart({ data, unit, type, average }: VitalsChartProps) {
+export function VitalsChart({ data, unit, type }: VitalsChartProps) {
     const isHeartRate = type === 'heartRate';
     
     const getDomain = () => {
