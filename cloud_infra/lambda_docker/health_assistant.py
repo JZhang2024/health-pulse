@@ -36,18 +36,15 @@ client = OpenAI(
 print("Initialized OpenAI client")
 
 # System prompt template
-SYSTEM_PROMPT = """You are a health information assistant integrated into a vital signs monitoring application. 
-You have access to the user's heart rate and respiratory rate measurements.
+BASE_SYSTEM_PROMPT = """You are a health information assistant integrated into a vital signs monitoring application. 
 
 Important guidelines:
 1. Always maintain a professional and empathetic tone
 2. Provide general health information only
 3. Include clear disclaimers when discussing medical topics
-4. Reference the user's vital signs data when relevant
-5. Encourage users to seek professional medical advice for specific health concerns
-6. Use the confidence scores to qualify your interpretations
-7. Alert users to concerning vital sign readings while maintaining a calm tone
-8. Focus on education and general wellness advice
+4. Encourage users to seek professional medical advice for specific health concerns
+5. Focus on education and general wellness advice
+6. Alert users to concerning vital sign readings while maintaining a calm tone
 
 Never provide:
 - Specific medical diagnoses
@@ -55,29 +52,25 @@ Never provide:
 - Medication advice
 - Emergency medical guidance
 
-Current vital signs data:
-Heart Rate: {heart_rate:.1f} {heart_rate_unit} (Confidence: {heart_rate_confidence:.0%})
-Respiratory Rate: {respiratory_rate:.1f} {respiratory_rate_unit} (Confidence: {respiratory_rate_confidence:.0%})
+{vitals_context}
 
 Remember to always include appropriate medical disclaimers in your responses."""
 
 def get_vital_signs_context(vitals_data: Optional[VitalsData]) -> str:
     """Generate context about vital signs for the AI model."""
-    if not vitals_data:
-        print("No vital signs data available.")
-        return "No vital signs data available."
+    if not vitals_data or not vitals_data.get('heartRate') or not vitals_data.get('respiratoryRate'):
+        return BASE_SYSTEM_PROMPT.format(
+            vitals_context="No vital signs have been recorded yet. Feel free to explain how to record vital signs or provide general health information."
+        )
     
     hr = vitals_data['heartRate']
     rr = vitals_data['respiratoryRate']
     
-    return SYSTEM_PROMPT.format(
-        heart_rate=hr['average'],
-        heart_rate_unit=hr['unit'],
-        heart_rate_confidence=hr['confidence'],
-        respiratory_rate=rr['average'],
-        respiratory_rate_unit=rr['unit'],
-        respiratory_rate_confidence=rr['confidence']
-    )
+    vitals_context = f"""Current vital signs data:
+Heart Rate: {hr['average']:.1f} {hr['unit']} (Confidence: {hr['confidence']:.0%})
+Respiratory Rate: {rr['average']:.1f} {rr['unit']} (Confidence: {rr['confidence']:.0%})"""
+    
+    return BASE_SYSTEM_PROMPT.format(vitals_context=vitals_context)
 
 def get_conversation_history(conversation_id: str) -> List[Message]:
     """Retrieve conversation history from DynamoDB."""
@@ -88,8 +81,9 @@ def get_conversation_history(conversation_id: str) -> List[Message]:
         )
         
         if not response['Items']:
+            print("No conversation history found")
             return []
-            
+        
         # Convert DynamoDB items to Message objects
         messages = []
         for item in response['Items']:
@@ -132,6 +126,7 @@ def generate_response(conversation_id: str, new_messages: List[Message], vitals_
     try:
         # Get existing conversation history
         history = get_conversation_history(conversation_id)
+        print("Retrieved conversation history")
         
         # Prepare conversation with system prompt and history
         conversation = [
@@ -146,7 +141,7 @@ def generate_response(conversation_id: str, new_messages: List[Message], vitals_
         
         # Get response from OpenAI
         response = client.chat.completions.create(
-            model="gpt-4-turbo-preview",
+            model="grok-beta",
             messages=conversation,
             temperature=0.7,
             max_tokens=500,
