@@ -34,7 +34,7 @@ export default function HelpPage() {
                 <h3 className="text-lg font-semibold text-sky-950">Recording Vitals</h3>
               </div>
               <ul className="space-y-2 text-sky-900 text-sm">
-                <li>1. Click "Start Recording" on the dashboard</li>
+                <li>1. Click &quot;Start Recording&quot; on the dashboard</li>
                 <li>2. Stay still while the camera records</li>
                 <li>3. Wait for automatic stop after 30 seconds</li>
                 <li>4. View your results in real-time</li>

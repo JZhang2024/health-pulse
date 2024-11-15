@@ -40,99 +40,6 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
   const videoChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout>();
 
-  // Auto-stop recording when max duration is reached
-  useEffect(() => {
-    if (isRecording && duration >= config.maxDuration) {
-      stopRecording();
-    }
-  }, [duration, config.maxDuration, isRecording]);
-
-  // Timer for duration tracking
-  useEffect(() => {
-    if (isRecording) {
-      timerRef.current = setInterval(() => {
-        setDuration(prev => prev + 1);
-      }, 1000);
-    }
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [isRecording]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [stream]);
-
-  const startRecording = useCallback(async () => {
-    try {
-      // Get the best supported MP4 codec
-      const mimeType = getBestMP4Codec();
-      if (!mimeType) {
-        throw new Error('MP4 recording is not supported in this browser');
-      }
-
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { 
-          facingMode: 'user',
-          width: { ideal: config.resolution.width, min: 1280 },
-          height: { ideal: config.resolution.height, min: 720 },
-          frameRate: { ideal: config.fps, min: 15 }, // Allow some flexibility in frame rate
-          aspectRatio: { ideal: 16/9 },
-        },
-        audio: false
-      });
-
-      // Check actual stream settings
-      const videoTrack = mediaStream.getVideoTracks()[0];
-      const settings = videoTrack.getSettings();
-      console.log('Video track settings:', settings);
-
-      setStream(mediaStream);
-
-      const mediaRecorder = new MediaRecorder(mediaStream, {
-        mimeType,
-        videoBitsPerSecond: 8000000 // 8 Mbps for high quality
-      });
-      
-      mediaRecorderRef.current = mediaRecorder;
-      videoChunksRef.current = [];
-      
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          videoChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.start(1000);
-      setIsRecording(true);
-      setDuration(0);
-      setError(null);
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to start recording';
-      setError(errorMessage);
-      
-      // If it's a codec support error, fall back to WebM with high quality
-      if (errorMessage.includes('MP4') || errorMessage.includes('not supported')) {
-        try {
-          await startWebMRecording();
-        } catch (fallbackErr) {
-          throw new Error(`Failed to start recording with both MP4 and WebM: ${fallbackErr}`);
-        }
-      } else {
-        throw err;
-      }
-    }
-  }, [config]);
-
   // Fallback to WebM if MP4 is not supported
   const startWebMRecording = async () => {
     const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -196,6 +103,99 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
       mediaRecorderRef.current.stop();
     });
   }, [isRecording, stream]);
+  
+  const startRecording = useCallback(async () => {
+    try {
+      // Get the best supported MP4 codec
+      const mimeType = getBestMP4Codec();
+      if (!mimeType) {
+        throw new Error('MP4 recording is not supported in this browser');
+      }
+
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { 
+          facingMode: 'user',
+          width: { ideal: config.resolution.width, min: 1280 },
+          height: { ideal: config.resolution.height, min: 720 },
+          frameRate: { ideal: config.fps, min: 15 }, // Allow some flexibility in frame rate
+          aspectRatio: { ideal: 16/9 },
+        },
+        audio: false
+      });
+
+      // Check actual stream settings
+      const videoTrack = mediaStream.getVideoTracks()[0];
+      const settings = videoTrack.getSettings();
+      console.log('Video track settings:', settings);
+
+      setStream(mediaStream);
+
+      const mediaRecorder = new MediaRecorder(mediaStream, {
+        mimeType,
+        videoBitsPerSecond: 8000000 // 8 Mbps for high quality
+      });
+      
+      mediaRecorderRef.current = mediaRecorder;
+      videoChunksRef.current = [];
+      
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          videoChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.start(1000);
+      setIsRecording(true);
+      setDuration(0);
+      setError(null);
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to start recording';
+      setError(errorMessage);
+      
+      // If it's a codec support error, fall back to WebM with high quality
+      if (errorMessage.includes('MP4') || errorMessage.includes('not supported')) {
+        try {
+          await startWebMRecording();
+        } catch (fallbackErr) {
+          throw new Error(`Failed to start recording with both MP4 and WebM: ${fallbackErr}`);
+        }
+      } else {
+        throw err;
+      }
+    }
+  }, [config, startWebMRecording]);
+  
+  // Auto-stop recording when max duration is reached
+  useEffect(() => {
+    if (isRecording && duration >= config.maxDuration) {
+      stopRecording();
+    }
+  }, [duration, config.maxDuration, isRecording, stopRecording]);
+
+  // Timer for duration tracking
+  useEffect(() => {
+    if (isRecording) {
+      timerRef.current = setInterval(() => {
+        setDuration(prev => prev + 1);
+      }, 1000);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [isRecording]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [stream]);
 
   return {
     isRecording,

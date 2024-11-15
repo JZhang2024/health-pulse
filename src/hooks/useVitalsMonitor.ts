@@ -1,5 +1,4 @@
-// useVitalsMonitor.ts
-import { useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import { useCamera } from './useCamera';
 import { VitalsData } from '@/types/vitallens';
 import { config } from '@/config';
@@ -34,18 +33,41 @@ export const useVitalsMonitor = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [analysisProgress, setAnalysisProgress] = useState(0);
 
-  // Analysis progress simulation interval
+  const startMonitoring = async () => {
+    setError(null);
+    try {
+      await camera.startRecording();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to start recording';
+      setError(errorMessage);
+      console.error('Recording start error:', { message: errorMessage, error });
+    }
+  };
+
+  const stopMonitoring = async () => {
+    try {
+      const videoBlob = await camera.stopRecording();
+      if (videoBlob) {
+        await analyzeVideo(videoBlob);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process video';
+      setError(errorMessage);
+      console.error('Monitoring error:', { 
+        message: errorMessage,
+        error: error as Error | unknown
+      });
+    }
+  };
+
   useEffect(() => {
     let progressInterval: NodeJS.Timeout;
     
     if (isAnalyzing && uploadProgress === 100) {
-      // Start at 0 when analysis begins
       setAnalysisProgress(0);
       
-      // Simulate progress updates
       progressInterval = setInterval(() => {
         setAnalysisProgress(prev => {
-          // Slowly increase up to 90%, leaving room for final processing
           if (prev < 90) {
             return Math.min(90, prev + (90 - prev) / 10);
           }
@@ -62,10 +84,10 @@ export const useVitalsMonitor = () => {
   }, [isAnalyzing, uploadProgress]);
 
   useEffect(() => {
-    if (camera.isRecording && camera.duration >= 25) { // Stop at 25 seconds
+    if (camera.isRecording && camera.duration >= 25) {
       stopMonitoring();
     }
-  }, [camera.duration, camera.isRecording]);
+  }, [camera.duration, camera.isRecording, stopMonitoring]);
 
   const getUploadUrl = async (fileType: string): Promise<UploadUrlResponse> => {
     const response = await fetch(`${config.api.baseUrl}/get-upload-url`, {
@@ -85,60 +107,53 @@ export const useVitalsMonitor = () => {
 
   const uploadToS3 = async (url: string, file: Blob): Promise<void> => {
     return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        
-        xhr.upload.addEventListener('progress', (event) => {
-            if (event.lengthComputable) {
-                const percentComplete = (event.loaded / event.total) * 100;
-                setUploadProgress(percentComplete);
-            }
-        });
+      const xhr = new XMLHttpRequest();
+      
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = (event.loaded / event.total) * 100;
+          setUploadProgress(percentComplete);
+        }
+      });
 
-        xhr.addEventListener('load', () => {
-            // S3 returns 200 for successful uploads
-            if (xhr.status >= 200 && xhr.status < 300) {
-                resolve();
-            } else {
-                console.error('Upload failed with response:', xhr.responseText);
-                reject(new Error(`Upload failed with status: ${xhr.status}`));
-            }
-        });
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else {
+          console.error('Upload failed with response:', xhr.responseText);
+          reject(new Error(`Upload failed with status: ${xhr.status}`));
+        }
+      });
 
-        xhr.addEventListener('error', () => {
-            console.error('Upload network error:', xhr.responseText);
-            reject(new Error('Network error during upload'));
-        });
+      xhr.addEventListener('error', () => {
+        console.error('Upload network error:', xhr.responseText);
+        reject(new Error('Network error during upload'));
+      });
 
-        xhr.open('PUT', url);
-        xhr.setRequestHeader('Content-Type', file.type);
-        
-        // Log request details for debugging
-        console.log('Uploading with:', {
-            url,
-            contentType: file.type,
-            fileSize: file.size
-        });
+      xhr.open('PUT', url);
+      xhr.setRequestHeader('Content-Type', file.type);
+      
+      console.log('Uploading with:', {
+        url,
+        contentType: file.type,
+        fileSize: file.size
+      });
 
-        xhr.send(file);
+      xhr.send(file);
     });
-};
+  };
 
   const analyzeVideo = async (videoBlob: Blob) => {
     try {
       setIsAnalyzing(true);
       setUploadProgress(0);
 
-      // 1. Get pre-signed URL
       const { uploadUrl, videoId } = await getUploadUrl(videoBlob.type);
 
-      // 2. Upload to S3
       console.log('Uploading video to S3...');
       await uploadToS3(uploadUrl, videoBlob);
       console.log('Upload complete');
 
-      // 3. Trigger processing
-
-      // log endpoint for debugging
       console.log(`${config.api.baseUrl}/process-video`);
       const processResponse = await fetch(`${config.api.baseUrl}/process-video`, {
         method: 'POST',
@@ -167,33 +182,6 @@ export const useVitalsMonitor = () => {
         setUploadProgress(0);
         setAnalysisProgress(0);
       }, 1000);
-    }
-  };
-
-  const startMonitoring = async () => {
-    setError(null);
-    try {
-      await camera.startRecording();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to start recording';
-      setError(errorMessage);
-      console.error('Recording start error:', { message: errorMessage, error });
-    }
-  };
-
-  const stopMonitoring = async () => {
-    try {
-      const videoBlob = await camera.stopRecording();
-      if (videoBlob) {
-        await analyzeVideo(videoBlob);
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to process video';
-      setError(errorMessage);
-      console.error('Monitoring error:', { 
-        message: errorMessage,
-        error: error as Error | unknown
-      });
     }
   };
 
