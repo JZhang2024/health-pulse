@@ -66,16 +66,19 @@ export function DashboardClient() {
     return (
         <>
             <Guidelines />
-            <MainAnalysisPanel 
-                isRecording={isRecording}
-                isAnalyzing={isAnalyzing}
-                stream={stream}
-                duration={duration}
-                onStart={startMonitoring}
-                onStop={stopMonitoring}
-                vitalsData={vitalsData}
-            />
-            <div className="lg:col-span-4 space-y-4">
+            <div className="w-full lg:col-span-8 space-y-4">
+                <MainAnalysisPanel 
+                    isRecording={isRecording}
+                    isAnalyzing={isAnalyzing}
+                    stream={stream}
+                    duration={duration}
+                    onStart={startMonitoring}
+                    onStop={stopMonitoring}
+                    vitalsData={vitalsData}
+                />
+            </div>
+            {/* Adjust layout for mobile */}
+            <div className="w-full lg:col-span-4 space-y-4 mt-4 lg:mt-0">
                 <AnalysisSummary />
                 <HealthAssistant />
             </div>

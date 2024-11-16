@@ -14,37 +14,35 @@ export function MainAnalysisPanel({
     vitalsData
 }: MainAnalysisPanelProps) {
     return (
-        <div className="lg:col-span-8 space-y-4">
-            <Card className="bg-white/80 backdrop-blur rounded-xl p-6 border border-sky-100 shadow-sm">
-                <ControlBar
+        <Card className="bg-white/80 backdrop-blur rounded-xl p-3 sm:p-6 border border-sky-100 shadow-sm">
+            <ControlBar
+                isRecording={isRecording}
+                isAnalyzing={isAnalyzing}
+                onStart={onStart}
+                onStop={onStop}
+            />
+
+            <div className="mb-4">
+                <VideoSection
                     isRecording={isRecording}
-                    isAnalyzing={isAnalyzing}
-                    onStart={onStart}
-                    onStop={onStop}
+                    duration={duration}
+                    maxDuration={25}
+                    stream={stream}
                 />
+            </div>
 
-                <div className="mb-4">
-                    <VideoSection
-                        isRecording={isRecording}
-                        duration={duration}
-                        maxDuration={25}
-                        stream={stream}
-                    />
-                </div>
-
-                <div className="space-y-4">
-                    <VitalMetricCard
-                        title="Heart Rate Monitor"
-                        metric={vitalsData.heartRate}
-                        type="heartRate"
-                    />
-                    <VitalMetricCard
-                        title="Respiratory Rate Monitor"
-                        metric={vitalsData.respiratoryRate}
-                        type="respiratoryRate"
-                    />
-                </div>
-            </Card>
-        </div>
+            <div className="space-y-3 sm:space-y-4">
+                <VitalMetricCard
+                    title="Heart Rate Monitor"
+                    metric={vitalsData.heartRate}
+                    type="heartRate"
+                />
+                <VitalMetricCard
+                    title="Respiratory Rate Monitor"
+                    metric={vitalsData.respiratoryRate}
+                    type="respiratoryRate"
+                />
+            </div>
+        </Card>
     );
 }

@@ -23,9 +23,9 @@ export function VitalMetricCard({ title, metric, type }: VitalMetricCardProps) {
   const note = getVitalSignNote(type, metric.average, metric.confidence);
   
   return (
-    <Card className="bg-sky-50/50 rounded-xl p-4 border border-sky-100">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-sky-950">{title}</h3>
+    <Card className="bg-sky-50/50 rounded-xl p-3 sm:p-4 border border-sky-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-4">
+        <h3 className="text-base sm:text-lg font-semibold text-sky-950">{title}</h3>
         <ConfidenceBadge confidence={metric.confidence} />
       </div>
       <VitalsChart 
@@ -34,13 +34,13 @@ export function VitalMetricCard({ title, metric, type }: VitalMetricCardProps) {
         type={type}
         average={metric.average}
       />
-      <div className="mt-4 flex justify-between items-center">
+      <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
         <div className="text-sky-950">
           Average: <span className="font-medium">
             {metric.average.toFixed(1)} {metric.unit}
           </span>
         </div>
-        <div className="text-sm text-sky-700">{note}</div>
+        <div className="text-xs sm:text-sm text-sky-700">{note}</div>
       </div>
     </Card>
   );
