@@ -1,35 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useCamera } from './useCamera';
-import { VitalsData } from '@/types/vitallens';
+import { UploadUrlResponse } from '@/types/vitallens';
 import { config } from '@/config';
-
-const DEFAULT_VITALS_DATA: VitalsData = {
-  heartRate: {
-    timeSeries: [],
-    average: 0,
-    confidence: 0,
-    unit: "bpm",
-    note: "Waiting for data..."
-  },
-  respiratoryRate: {
-    timeSeries: [],
-    average: 0,
-    confidence: 0,
-    unit: "br/min",
-    note: "Waiting for data..."
-  }
-};
-
-interface UploadUrlResponse {
-  uploadUrl: string;
-  videoId: string;
-}
+import { useDashboardStore } from '@/stores/useDashboardStore';
 
 export const useVitalsMonitor = () => {
+  const vitalsData = useDashboardStore(state => state.vitalsData);
+  const setVitalsData = useDashboardStore(state => state.setVitalsData);
   const camera = useCamera();
   const { stopRecording } = camera;
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [vitalsData, setVitalsData] = useState<VitalsData>(DEFAULT_VITALS_DATA);
   const [error, setError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [analysisProgress, setAnalysisProgress] = useState(0);
@@ -116,6 +96,7 @@ export const useVitalsMonitor = () => {
       const results = await processResponse.json();
       setAnalysisProgress(100);
       setVitalsData(results);
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to analyze video';
       setError(errorMessage);

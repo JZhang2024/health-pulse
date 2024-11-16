@@ -75,3 +75,8 @@ interface BaseMetric {
   }
   
   export type VitalType = 'heartRate' | 'respiratoryRate';
+
+  export interface UploadUrlResponse {
+    uploadUrl: string;
+    videoId: string;
+  }
