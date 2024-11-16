@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Camera, Mic } from "lucide-react";
+import { Camera } from "lucide-react";
 import { ControlBarProps } from "@/types/components";
 
 export function ControlBar({ 
