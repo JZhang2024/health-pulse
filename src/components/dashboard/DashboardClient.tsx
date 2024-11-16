@@ -64,9 +64,14 @@ export function DashboardClient() {
     }, [analysisProgress]);
 
     return (
-        <>
-            <Guidelines />
-            <div className="w-full lg:col-span-8 space-y-4">
+        <div className="flex flex-col space-y-4">
+            {/* Guidelines - Full width on both mobile and desktop */}
+            <div className="w-full">
+                <Guidelines />
+            </div>
+
+            {/* Main Analysis Panel - Should be visible first on mobile */}
+            <div className="w-full order-1 sm:order-none">
                 <MainAnalysisPanel 
                     isRecording={isRecording}
                     isAnalyzing={isAnalyzing}
@@ -77,11 +82,12 @@ export function DashboardClient() {
                     vitalsData={vitalsData}
                 />
             </div>
-            {/* Adjust layout for mobile */}
-            <div className="w-full lg:col-span-4 space-y-4 mt-4 lg:mt-0">
+
+            {/* Analysis Summary and Health Assistant - Stack below on mobile */}
+            <div className="w-full order-2 sm:order-none space-y-4">
                 <AnalysisSummary />
                 <HealthAssistant />
             </div>
-        </>
+        </div>
     );
 }

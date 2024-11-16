@@ -22,7 +22,7 @@ export function MainAnalysisPanel({
                 onStop={onStop}
             />
 
-            <div className="mb-4">
+            <div className="mb-3 sm:mb-4">
                 <VideoSection
                     isRecording={isRecording}
                     duration={duration}
