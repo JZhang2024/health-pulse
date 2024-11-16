@@ -2,7 +2,8 @@
 
 HealthPulse is a web-based platform that demonstrates the integration of computer vision and AI in healthcare technology. The application provides contactless vital sign monitoring through webcam-based photoplethysmography (PPG) and features an AI health assistant for personalized guidance.
 
-![Project Preview Image Placeholder](/api/placeholder/800/400)
+![Analyzing image](images/image.png)
+![Results](images/image-1.png)
 
 ## Features
 
@@ -21,23 +22,32 @@ HealthPulse is a web-based platform that demonstrates the integration of compute
 ### Technical Features
 - Contactless monitoring using computer vision
 - Real-time video processing at 30 FPS
-- Immediate analysis and results
+- Quick analysis and results
 - Responsive web design
 
 ## Technology Stack
 
 ### Frontend
-- Next.js 14 (App Router)
+- Next.js 15 (App Router)
 - React
 - TypeScript
 - TailwindCSS
 - shadcn/ui components
 - Recharts for data visualization
 
+### Backend
+ - Next.js/Node 
+ - AWS API Gateway (api endpoint management)
+ - AWS Lambda (serverless functions)
+ - AWS S3 (temp video storage)
+ - AWS DynamoDB (temp conversation history)
+ - FastAPI (only during initial api testing)
+ - Vercel (managed deployment)
+
 ### APIs & Integrations
 - VitalLens API from Roust Labs for vital sign detection
-- WebRTC for camera access
-- MediaRecorder API for video capture
+- OpenAI/xAI API using grok-beta model for health assistant chatbot
+- Built-in Web Browser APIs for camera access and video capture
 
 ## Getting Started
 
@@ -61,14 +71,16 @@ npm install
 
 3. Set up environment variables
 ```bash
-# Create a .env.local file
-cp .env.example .env.local
+# Create a .env file
+cp .env.example .env
 
 # Add your API key
 VITALLENS_API_KEY=your_api_key_here
 ```
 
-4. Run the development server
+4. Set up AWS cloud architecture (api gateway, lambdas, bucket, dynamodb)
+
+5. Run the development server
 ```bash
 npm run dev
 ```
@@ -117,7 +129,6 @@ The application uses the VitalLens API to process video streams and extract vita
 - Respiratory rate through chest movement analysis
 
 ### Camera Handling
-- Implements WebRTC for camera access
 - Uses MediaRecorder API for video capture
 - Supports both MP4 and WebM formats
 - Automatic quality and codec selection
@@ -136,14 +147,18 @@ The application uses the VitalLens API to process video streams and extract vita
 - Safari
 
 ### Known Limitations
+- Vitallens free tier limits to 100 monthly requests (assuming ~30s requests)
 - Requires good lighting conditions
 - Subject must remain relatively still
 - Performance depends on camera quality
-- Best results with 30-second recordings
+- Best results with at least 15-second recordings
+
+### Future Work
+- Currently recording/saving video before passing to API, but I want to try a streaming implementation to actually monitor vitals in real-time as we're recording. Just not sure if it would eat through my free tier requests.
 
 ## Acknowledgments
 
-This project utilizes the VitalLens API from Roust Labs for vital signs detection. VitalLens provides the computer vision and PPG technology that enables contactless vital sign monitoring.
+This project utilizes the VitalLens API from Roust Labs for vital signs detection. VitalLens provides the computer vision and PPG technology that enables contactless vital sign monitoring. They also built the python client that abstracts api implementation, face detection and video/frame optimization (cropping, zooming, etc.)
 
 ## Disclaimer
 
