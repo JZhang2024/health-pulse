@@ -94,14 +94,14 @@ src/
 ├── app/
 │   ├── page.tsx                # Home page
 │   ├── about/
-│   │   └── page.tsx           # About page
+│   │   └── page.tsx            # About page
 │   ├── help/
-│   │   └── page.tsx           # Help page
+│   │   └── page.tsx            # Help page
 │   └── dashboard/
-│       └── page.tsx           # Main dashboard
+│       └── page.tsx            # Main dashboard
 ├── components/
-│   ├── layout/
-│   │   └── Navigation.tsx     # Site navigation
+│   ├── ui/
+│   │   └── Navigation.tsx      # Site navigation
 │   ├── home/
 │   │   ├── Hero.tsx
 │   │   ├── Features.tsx
@@ -116,9 +116,14 @@ src/
 │       ├── VitalsChart.tsx
 │       ├── VitalMetricCard.tsx
 │       └── RecordingProgress.tsx
-└── hooks/
-    ├── useVitalsMonitor.ts    # Vital signs monitoring logic
-    └── useCamera.ts           # Camera handling logic
+├── config/
+│   └── awsConfig.ts            # AWS configuration
+├── hooks/
+│   ├── useVitalsMonitor.ts     # Vital signs monitoring logic
+│   └── useCamera.ts            # Camera handling logic
+└── types/
+    └── index.ts                # TypeScript types
+```
 ```
 
 ## Key Features Implementation
