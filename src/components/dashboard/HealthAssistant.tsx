@@ -1,7 +1,8 @@
 import { Bot, SendHorizontal, AlertTriangle, Loader2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { VitalsData } from "@/types/vitallens";
-import { ChatMessage, HealthAssistantApiResponse, HealthAssistantProps } from "@/types/components";
+import { ChatMessage, HealthAssistantApiResponse } from "@/types/components";
+import { useDashboardStore } from "@/stores/useDashboardStore";
 import { config } from "@/config";
 
 async function sendMessage(messages: ChatMessage[], vitalsData?: VitalsData, conversationId?: string) {
@@ -24,11 +25,6 @@ async function sendMessage(messages: ChatMessage[], vitalsData?: VitalsData, con
   return await response.json() as HealthAssistantApiResponse;
 }
 
-const INITIAL_MESSAGE: ChatMessage = {
-  role: "assistant",
-  content: "Hello! I can help you understand your vital signs and provide general health information. How can I assist you today?"
-};
-
 const QUICK_ACTIONS = [
   {
     label: "Explain Vital Signs",
@@ -40,12 +36,15 @@ const QUICK_ACTIONS = [
   }
 ];
 
-export default function HealthAssistant({ className = '', vitalsData }: HealthAssistantProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
+export default function HealthAssistant() {
+  const vitalsData = useDashboardStore(state => state.vitalsData);
+  const messages = useDashboardStore(state => state.chatMessages);
+  const addChatMessage = useDashboardStore(state => state.addChatMessage);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [conversationId, setConversationId] = useState<string>();
+  const conversationId = useDashboardStore(state => state.conversationId);
+  const setConversationId = useDashboardStore(state => state.setConversationId);
   const messageEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -60,7 +59,7 @@ export default function HealthAssistant({ className = '', vitalsData }: HealthAs
 
     const userMessage: ChatMessage = { role: 'user', content: content.trim() };
 
-    setMessages(prev => [...prev, userMessage]);
+    addChatMessage(userMessage);
     setInputMessage("");
 
     try {
@@ -70,10 +69,7 @@ export default function HealthAssistant({ className = '', vitalsData }: HealthAs
         setConversationId(data.conversationId);
       }
 
-      setMessages(prev => [
-        ...prev,
-        { role: 'assistant', content: data.response }
-      ]);
+      addChatMessage({ role: 'assistant', content: data.response });
     } catch (err) {
       setError('Unable to get response. Please try again.');
       console.error('Health Assistant Error:', err);
@@ -90,7 +86,7 @@ export default function HealthAssistant({ className = '', vitalsData }: HealthAs
   };
 
   return (
-    <div className={`bg-white/80 backdrop-blur rounded-xl border border-sky-100 shadow-sm flex flex-col ${className}`}>
+    <div className={"bg-white/80 backdrop-blur rounded-xl border border-sky-100 shadow-sm flex flex-col h-[500px]"}>
       <div className="p-4 border-b border-sky-100">
         <div className="flex items-center gap-2">
           <Bot className="h-5 w-5 text-sky-600" />

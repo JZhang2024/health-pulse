@@ -1,9 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { getVitalSignNote } from "../vitals/VitalMetricCard";
-import { AnalysisSummaryProps } from "@/types/components";
+import { useDashboardStore } from "@/stores/useDashboardStore";
 
-export function AnalysisSummary({ vitalsData }: AnalysisSummaryProps) {
-    const { heartRate, respiratoryRate } = vitalsData;
+export function AnalysisSummary() {
+    const { heartRate, respiratoryRate } = useDashboardStore(state => state.vitalsData);
     const heartRateNote = getVitalSignNote('heartRate', heartRate.average, heartRate.confidence);
     const respiratoryRateNote = getVitalSignNote('respiratoryRate', respiratoryRate.average, respiratoryRate.confidence);
 

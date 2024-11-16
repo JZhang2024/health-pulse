@@ -24,10 +24,6 @@ export interface VideoSectionProps {
   stream: MediaStream | null;
 }
 
-export interface AnalysisSummaryProps {
-  vitalsData: VitalsData;
-}
-
 // Vitals component props
 export interface ConfidenceBadgeProps {
   confidence: number;
@@ -41,11 +37,6 @@ export interface RecordingProgressProps {
 export interface ChatMessage {
   role: 'assistant' | 'user';
   content: string;
-}
-
-export interface HealthAssistantProps {
-  className?: string;
-  vitalsData?: VitalsData;
 }
 
 export interface HealthAssistantApiResponse {

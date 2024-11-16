@@ -109,7 +109,7 @@ export const useVitalsMonitor = () => {
         setAnalysisProgress(0);
       }, 1000);
     }
-  }, [getUploadUrl, uploadToS3]);
+  }, [getUploadUrl, uploadToS3, setVitalsData]);
 
   const startMonitoring = async () => {
     setError(null);
