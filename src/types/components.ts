@@ -8,6 +8,7 @@ export interface MainAnalysisPanelProps {
   onStart: () => Promise<void>;
   onStop: () => Promise<void>;
   vitalsData: VitalsData;
+  countdown: number;
 }
 
 export interface ControlBarProps {
@@ -22,6 +23,7 @@ export interface VideoSectionProps {
   duration: number;
   maxDuration: number;
   stream: MediaStream | null;
+  countdown: number;
 }
 
 // Vitals component props

@@ -79,7 +79,6 @@ export const useVitalsMonitor = () => {
       await uploadToS3(uploadUrl, videoBlob);
       console.log('Upload complete');
 
-      console.log(`${config.api.baseUrl}/process-video`);
       const processResponse = await fetch(`${config.api.baseUrl}/process-video`, {
         method: 'POST',
         headers: {
@@ -96,6 +95,7 @@ export const useVitalsMonitor = () => {
       const results = await processResponse.json();
       setAnalysisProgress(100);
       setVitalsData(results);
+      console.log('Analysis complete');
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to analyze video';

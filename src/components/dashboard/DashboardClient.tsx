@@ -17,6 +17,7 @@ export function DashboardClient() {
         error, 
         stream,
         duration,
+        countdown,
         uploadProgress,
         analysisProgress,
         startMonitoring, 
@@ -80,6 +81,7 @@ export function DashboardClient() {
                     onStart={startMonitoring}
                     onStop={stopMonitoring}
                     vitalsData={vitalsData}
+                    countdown={countdown}
                 />
             </div>
 

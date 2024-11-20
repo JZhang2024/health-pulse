@@ -11,7 +11,8 @@ export function MainAnalysisPanel({
     duration,
     onStart,
     onStop,
-    vitalsData
+    vitalsData,
+    countdown
 }: MainAnalysisPanelProps) {
     return (
         <Card className="bg-white/80 backdrop-blur rounded-xl p-3 sm:p-6 border border-sky-100 shadow-sm">
@@ -28,6 +29,7 @@ export function MainAnalysisPanel({
                     duration={duration}
                     maxDuration={25}
                     stream={stream}
+                    countdown={countdown}
                 />
             </div>
 

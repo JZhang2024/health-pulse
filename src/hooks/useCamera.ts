@@ -35,10 +35,12 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [countdown, setCountdown] = useState<number>(0);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const videoChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout>();
+  const countdownRef = useRef<NodeJS.Timeout>();
 
   // Fallback to WebM if MP4 is not supported
   const startWebMRecording = useCallback(async () => {
@@ -117,22 +119,27 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
           facingMode: 'user',
           width: { ideal: config.resolution.width, min: 1280 },
           height: { ideal: config.resolution.height, min: 720 },
-          frameRate: { ideal: config.fps, min: 15 }, // Allow some flexibility in frame rate
+          frameRate: { ideal: config.fps, min: 15 },
           aspectRatio: { ideal: 16/9 },
         },
         audio: false
       });
 
-      // Check actual stream settings
-      const videoTrack = mediaStream.getVideoTracks()[0];
-      const settings = videoTrack.getSettings();
-      console.log('Video track settings:', settings);
-
       setStream(mediaStream);
+      
+      // Simple countdown
+      setCountdown(3);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setCountdown(2);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setCountdown(1);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setCountdown(0);
 
+      // Start recording
       const mediaRecorder = new MediaRecorder(mediaStream, {
         mimeType,
-        videoBitsPerSecond: 8000000 // 8 Mbps for high quality
+        videoBitsPerSecond: 8000000
       });
       
       mediaRecorderRef.current = mediaRecorder;
@@ -194,15 +201,21 @@ export const useCamera = (config: CameraConfig = DEFAULT_CONFIG) => {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+      }
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
     };
   }, [stream]);
 
   return {
     isRecording,
     duration,
-    stream,
-    progress: (duration / config.maxDuration) * 100,
     error,
+    stream,
+    countdown,
     startRecording,
     stopRecording,
     currentMimeType: mediaRecorderRef.current?.mimeType || null
