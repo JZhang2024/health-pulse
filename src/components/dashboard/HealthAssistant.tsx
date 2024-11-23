@@ -4,6 +4,7 @@ import { VitalsData } from "@/types/vitallens";
 import { ChatMessage, HealthAssistantApiResponse } from "@/types/components";
 import { useDashboardStore } from "@/stores/useDashboardStore";
 import { config } from "@/config";
+import ReactMarkdown from 'react-markdown';
 
 async function sendMessage(messages: ChatMessage[], vitalsData?: VitalsData, conversationId?: string) {
   const response = await fetch(`${config.api.baseUrl}/health-assistant`, {
@@ -121,7 +122,9 @@ export default function HealthAssistant() {
                   <span className="text-xs font-medium text-sky-600">Health Assistant</span>
                 </div>
               )}
-              <p className="text-xs sm:text-sm whitespace-pre-wrap">{message.content}</p>
+              <div className="text-xs sm:text-sm whitespace-pre-wrap prose prose-sm max-w-none dark:prose-invert prose-p:my-0 prose-headings:mb-1">
+                <ReactMarkdown>{message.content}</ReactMarkdown>
+              </div>
             </div>
           </div>
         ))}
