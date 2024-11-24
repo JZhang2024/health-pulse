@@ -4,10 +4,10 @@ import { MainAnalysisPanel } from "./MainAnalysisPanel";
 import { AnalysisSummary } from "./AnalysisSummary";
 import { useVitalsMonitor } from "@/hooks/useVitalsMonitor";
 import Guidelines from "./Guidelines";
-import HealthAssistant from "./HealthAssistant";
 import { toast } from "sonner";
 import { useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
+import HealthAssistant from "./HealthAssistant";
 
 export function DashboardClient() {
     const { 
@@ -65,14 +65,8 @@ export function DashboardClient() {
     }, [analysisProgress]);
 
     return (
-        <div className="flex flex-col space-y-4">
-            {/* Guidelines - Full width on both mobile and desktop */}
-            <div className="w-full">
-                <Guidelines />
-            </div>
-
-            {/* Main Analysis Panel - Should be visible first on mobile */}
-            <div className="w-full order-1 sm:order-none">
+        <div className="container mx-auto p-4 space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <MainAnalysisPanel 
                     isRecording={isRecording}
                     isAnalyzing={isAnalyzing}
@@ -83,12 +77,11 @@ export function DashboardClient() {
                     vitalsData={vitalsData}
                     countdown={countdown}
                 />
-            </div>
-
-            {/* Analysis Summary and Health Assistant - Stack below on mobile */}
-            <div className="w-full order-2 sm:order-none space-y-4">
-                <AnalysisSummary />
-                <HealthAssistant />
+                <div className="space-y-4">
+                    <AnalysisSummary />
+                    <Guidelines />
+                    <HealthAssistant />
+                </div>
             </div>
         </div>
     );
